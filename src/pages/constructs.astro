@@ -1,0 +1,59 @@
+---
+import Base from '../layouts/Base.astro';
+import Stat from '../components/Stat.astro';
+import Census from '../components/Census.astro';
+import { number, headline, constructs } from '../lib/report.js';
+---
+
+<Base
+  title="The census, in the laravel-workers report"
+  description={`All ${number(headline.constructs.audited)} audited PHP constructs, their verdicts, and the batch each one was proven in.`}
+>
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">the census</p>
+        <h1>{number(headline.constructs.audited)} constructs, {number(headline.constructs.compiles)} of them compile</h1>
+      </div>
+      <p>
+        `tools/constructs.json` is the complete list of PHP constructs the audit covers. Each one
+        lands in exactly one bucket, and the three tallies below are recomputed from that file every
+        time this site is built.
+      </p>
+    </div>
+
+    <div class="stats">
+      <Stat count={headline.constructs.compiles} label="compile to JS" verdict="compiles" />
+      <Stat count={headline.constructs.failsLoud} label="fail the build, loudly" verdict="fails-loud" />
+      <Stat count={headline.constructs.documented} label="documented build-level gap" verdict="documented" />
+    </div>
+
+    <Census constructs={constructs} title="All batches" caption="One cell per construct, in file order. Hover for the label; the table below carries the detail." />
+
+    <div class="table-wrap" style="margin-top:1.5rem">
+      <table>
+        <caption>Every construct in `tools/constructs.json`, with the batch it was proven in.</caption>
+        <thead>
+          <tr>
+            <th scope="col">construct</th>
+            <th scope="col">verdict</th>
+            <th scope="col">batch</th>
+            <th scope="col">note</th>
+          </tr>
+        </thead>
+        <tbody>
+          {constructs.map((row) => (
+            <tr>
+              <th scope="row" class="mono">{row.label}</th>
+              <td class="cell-verdict" data-verdict={row.verdict}>
+                <span class="dot" data-verdict={row.verdict}></span>{row.verdict.replace('-', ' ')}
+              </td>
+              <td class="mono">{row.batch ?? 'n/a'}</td>
+              <td class="small">{row.note ?? row.reason ?? ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</Base>

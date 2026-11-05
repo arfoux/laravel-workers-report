@@ -1,0 +1,188 @@
+---
+import Base from '../layouts/Base.astro';
+import { number, report, shortSha, fetchedOn } from '../lib/report.js';
+
+const checks = report.checks;
+const passed = checks.filter((check) => check.ok).length;
+const failed = checks.filter((check) => !check.ok);
+const head = shortSha(report.auditedRepo.head);
+
+const pipeline = [
+  {
+    step: '1 · extract',
+    run: 'node scripts/extract-lw.mjs',
+    what: 'Reads the audited repository in place and writes src/data/report.json. Every figure on this site is a field of that file: nothing is typed by hand anywhere in src/.',
+  },
+  {
+    step: '2 · cross-check',
+    run: 'the extractor itself, plus tools/',
+    what: `Each headline number is checked against a second surface published by the repository itself (the README counter block, the COMPILED.md audit table, the MAP.md index). ${passed} of ${checks.length} checks passed on this build.`,
+  },
+  {
+    step: '3 · fail on drift',
+    run: 'node scripts/verify-lw.mjs --repo ../laravel-workers',
+    what: 'Re-extracts into a temporary file and diffs it against the committed report.json. If the audited repository moved, this exits non-zero instead of publishing a stale page.',
+  },
+  {
+    step: '4 · build',
+    run: 'astro build',
+    what: 'A static build: no adapter, no server runtime. The whole site is HTML, one stylesheet and one script, served as Workers Static Assets.',
+  },
+];
+
+const notVerified = [
+  {
+    what: 'the numbers describe a specific commit',
+    detail: `The extractor resolves HEAD with git, so this build is pinned to ${head} (v${report.auditedRepo.version}) and names it in the footer. A later commit is not covered by these figures until the extractor is run again.`,
+  },
+  {
+    what: 'the repository was clean at extraction time',
+    detail: report.auditedRepo.dirtyFiles === 0
+      ? 'git reported no modified files, so the figures come from the committed tree, not from uncommitted work.'
+      : `git reported ${report.auditedRepo.dirtyFiles} modified files at extraction time; the figures may include uncommitted work.`,
+  },
+  {
+    what: 'the ledger lives outside the repository',
+    detail: 'notes/PLAYBOOK.local.md is a working-tree note that git does not track. Its numbers are quoted, but they are the only figures here an outside reader cannot independently re-derive from the repository alone.',
+  },
+  {
+    what: 'quoted rows are reproduced with normalised punctuation',
+    detail: 'Rows copied out of the audited repository keep their wording but not its em dashes or en dashes, which this report does not use. Numbers, identifiers and counts are untouched.',
+  },
+  {
+    what: 'the CPU numbers were measured on the Free plan, once',
+    detail: 'The gate records one run date (2026-10-18 for the probe, 2026-11-02 for the automated gate) and one account. They are reproducible with npm run gate:cpu, but this site does not re-run the gate.',
+  },
+];
+---
+
+<Base
+  title="Method, in the laravel-workers report"
+  description="How every number on this site is produced, what was measured, and what could not be verified."
+>
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">method</p>
+        <h1>A report with no hand-typed numbers</h1>
+      </div>
+      <p>
+        The claim this site makes is narrow and checkable: for each number shown, there is a file in
+        the audited repository it was read out of, and a check that fails if the two disagree.
+      </p>
+    </div>
+
+    <ul class="list">
+      {pipeline.map((step) => (
+        <li>
+          <div class="list__head">
+            <span class="list__title">{step.step}</span>
+            <code class="small muted">{step.run}</code>
+          </div>
+          <p class="small">{step.what}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">the checks</p>
+        <h2>{number(passed)} of {number(checks.length)} passed this build</h2>
+      </div>
+      <p>
+        These run inside the extractor, so a number that stops agreeing with its source file stops the
+        build rather than appearing here as a footnote.
+      </p>
+    </div>
+
+    {failed.length > 0 && (
+      <p class="notice" role="status">
+        {number(failed.length)} check(s) failed on this build: {failed.map((check) => check.name).join('; ')}.
+      </p>
+    )}
+
+    <ul class="list">
+      {checks.map((check) => (
+        <li>
+          <div class="list__head">
+            <span class="list__title">{check.ok ? 'PASS' : 'FAIL'}</span>
+            <span class="small">{check.name}</span>
+          </div>
+          <p class="small muted mono">{check.detail}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">provenance</p>
+        <h2>Files read, and their hashes</h2>
+      </div>
+      <p>
+        The extractor records the size and a SHA-256 prefix of every file it read, so a figure here
+        can be traced to an exact revision of an exact file.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption>Extracted {fetchedOn} from {report.auditedRepo.name} at <code class="mono">{head}</code>.</caption>
+        <thead>
+          <tr>
+            <th scope="col">file</th>
+            <th scope="col">bytes</th>
+            <th scope="col">sha-256 (prefix)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {report.auditedRepo.files.map((file) => (
+            <tr>
+              <th scope="row" class="mono">{file.path}</th>
+              <td class="mono">{number(file.bytes)}</td>
+              <td class="mono">{file.sha256}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">limits</p>
+        <h2>What this report does not claim</h2>
+      </div>
+      <p>The honest half of the method: things that are outside what a static extraction can settle.</p>
+    </div>
+
+    <ul class="list">
+      {notVerified.map((row) => (
+        <li>
+          <div class="list__head"><span class="list__title">{row.what}</span></div>
+          <p class="small muted">{row.detail}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">reproduce</p>
+        <h2>Four commands</h2>
+      </div>
+      <p>With the audited repository checked out next to this one:</p>
+    </div>
+
+<pre><code>git clone https://github.com/arfoux/laravel-workers ../laravel-workers
+npm install
+node scripts/extract-lw.mjs     # writes src/data/report.json
+node scripts/verify-lw.mjs      # fails if the committed report.json drifted
+npm run build                   # emits dist/, static</code></pre>
+  </section>
+</Base>

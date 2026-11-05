@@ -1,0 +1,110 @@
+---
+import '../styles/site.css';
+import { auditedRepo, fetchedOn, shortSha } from '../lib/report.js';
+
+const { title, description, showReportLink = true } = Astro.props;
+const current = Astro.url.pathname;
+const links = [
+  { href: '/constructs/', label: 'census' },
+  { href: '/coverage/', label: 'coverage' },
+  { href: '/gaps/', label: 'gaps' },
+  { href: '/ledger/', label: 'ledger' },
+  { href: '/method/', label: 'method' },
+  ...(showReportLink ? [{ href: '/report/', label: 'report' }] : []),
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <script is:inline>
+      // Resolve the theme before first paint so no theme flashes.
+      const saved = localStorage.getItem('lw-theme');
+      const prefersDark = matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.dataset.theme = saved ?? (prefersDark ? 'dark' : 'light');
+    </script>
+  </head>
+
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+
+    <header class="topbar">
+      <div class="shell topbar__inner">
+        <a class="brand" href="/">
+          <img src="/logo.svg" width="22" height="22" alt="" aria-hidden="true" />
+          <span>laravel-workers report</span>
+        </a>
+
+        <nav class="nav" aria-label="Sections">
+          {links.map((link) => (
+            <a href={link.href} aria-current={current === link.href ? 'page' : undefined}>{link.label}</a>
+          ))}
+        </nav>
+
+        <button class="theme" type="button" data-theme-toggle>
+          <span data-theme-label>theme</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <footer class="footer">
+      <div class="shell footer__grid">
+        <div>
+          <p>
+            Every number on this page is produced by <code>scripts/extract-lw.mjs</code> from
+            {' '}<a href={`https://github.com/${auditedRepo.name}`}>{auditedRepo.name}</a>{' '}
+            at <code class="mono">{shortSha(auditedRepo.head)}</code> (v{auditedRepo.version}),
+            extracted {fetchedOn}. Nothing here is typed by hand.
+          </p>
+          <p class="small">
+            Status colours and the mark come from the project's own
+            {' '}<a href={`https://github.com/${auditedRepo.name}/blob/main/docs/BRAND.md`}>docs/BRAND.md</a>,
+            so this report cannot drift from the product it describes.
+          </p>
+        </div>
+        <div>
+          <h2>this site</h2>
+          <ul>
+            {links.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+          </ul>
+        </div>
+        <div>
+          <h2>the product</h2>
+          <ul>
+            <li><a href={`https://github.com/${auditedRepo.name}`}>repository</a></li>
+            <li><a href={`https://www.npmjs.com/package/${auditedRepo.name}`}>npm</a></li>
+            <li><a href={`https://github.com/${auditedRepo.name}/blob/main/docs/READINESS.md`}>readiness</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <script is:inline>
+      const toggle = document.querySelector('[data-theme-toggle]');
+      const label = document.querySelector('[data-theme-label]');
+      const sync = () => {
+        const theme = document.documentElement.dataset.theme;
+        label.textContent = theme === 'dark' ? 'light' : 'dark';
+      };
+      toggle.addEventListener('click', () => {
+        const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = next;
+        localStorage.setItem('lw-theme', next);
+        sync();
+      });
+      sync();
+    </script>
+  </body>
+</html>

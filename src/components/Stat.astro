@@ -1,0 +1,35 @@
+---
+import { number } from '../lib/report.js';
+
+const { count, verdict, label, width = '4rem' } = Astro.props;
+const colour = { compiles: 'var(--compiles)', 'fails-loud': 'var(--blocked)', documented: 'var(--documented)' }[verdict] ?? 'var(--fg)';
+---
+
+<div class="stat" style={`--w:${width}`}>
+  <span class="stat__value" style={`color:${colour}`}>{number(count)}</span>
+  <span class="stat__label">{label}</span>
+</div>
+
+<style>
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    min-width: 0;
+    border-left: var(--hair) solid var(--line);
+    padding-left: 0.7rem;
+  }
+
+  .stat__value {
+    font-family: var(--mono);
+    font-size: var(--step-2);
+    font-variant-numeric: tabular-nums;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .stat__label {
+    font-size: var(--step--1);
+    color: var(--fg-muted);
+  }
+</style>

@@ -1,0 +1,118 @@
+---
+import Base from '../layouts/Base.astro';
+import { number, report, headline, constructs, docsPages, features } from '../lib/report.js';
+---
+
+<Base
+  title="Full report, every extracted figure"
+  description="Every extracted figure and every extracted row on a single page, for reading and for printing."
+  showReportLink={false}
+>
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">full report</p>
+        <h1>Everything, on one page</h1>
+      </div>
+      <p>
+        This is the same extracted data as the rest of the site, with nothing hidden behind
+        interaction, so the whole thing can be read straight through or printed.
+      </p>
+    </div>
+
+    <h2>Counters</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">figure</th><th scope="col">value</th></tr>
+        </thead>
+        <tbody>
+          <tr><th scope="row">constructs audited</th><td class="mono">{number(headline.constructs.audited)}</td></tr>
+          <tr><th scope="row">constructs compiling</th><td class="mono">{number(headline.constructs.compiles)}</td></tr>
+          <tr><th scope="row">constructs failing loud</th><td class="mono">{number(headline.constructs.failsLoud)}</td></tr>
+          <tr><th scope="row">constructs documented as build-level gaps</th><td class="mono">{number(headline.constructs.documented)}</td></tr>
+          <tr><th scope="row">facades classified</th><td class="mono">{number(headline.facades.classified)} of {number(headline.facades.total)}</td></tr>
+          <tr><th scope="row">Blade corpus byte-identical vs PHP 8.3</th><td class="mono">{number(headline.corpus.identical)} of {number(headline.corpus.cases)}</td></tr>
+          <tr><th scope="row">documentation pages with a verdict</th><td class="mono">{number(headline.docs.pages)}</td></tr>
+          <tr><th scope="row">feature-map rows</th><td class="mono">{number(features.length)}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Census</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">construct</th><th scope="col">verdict</th><th scope="col">batch</th><th scope="col">note</th></tr>
+        </thead>
+        <tbody>
+          {constructs.map((row) => (
+            <tr>
+              <th scope="row" class="mono">{row.label}</th>
+              <td class="mono">{row.verdict}</td>
+              <td class="mono">{row.batch ?? 'n/a'}</td>
+              <td class="small muted">{row.note ?? row.reason ?? ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Coverage</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">page</th><th scope="col">class</th><th scope="col">planned</th><th scope="col">note</th></tr>
+        </thead>
+        <tbody>
+          {docsPages.map((row) => (
+            <tr>
+              <th scope="row" class="mono">{row.page}</th>
+              <td class="mono">{row.klass}</td>
+              <td class="mono">{row.planned ?? 'n/a'}</td>
+              <td class="small muted">{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Feature map</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">area</th><th scope="col">Laravel</th><th scope="col">edge equivalent</th><th scope="col">class</th><th scope="col">plan</th></tr>
+        </thead>
+        <tbody>
+          {features.map((row) => (
+            <tr>
+              <th scope="row" class="small">{row.area.replace(/\*\*/g, '')}</th>
+              <td class="small">{row.laravel}</td>
+              <td class="small">{row.edge}</td>
+              <td class="mono">{row.klass}</td>
+              <td class="mono">{row.plan}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Checks</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th scope="col">result</th><th scope="col">check</th><th scope="col">detail</th></tr>
+        </thead>
+        <tbody>
+          {report.checks.map((check) => (
+            <tr>
+              <th scope="row" class="mono">{check.ok ? 'PASS' : 'FAIL'}</th>
+              <td class="small">{check.name}</td>
+              <td class="small muted mono">{check.detail}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</Base>

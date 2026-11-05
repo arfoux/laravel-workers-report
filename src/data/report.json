@@ -1,0 +1,3186 @@
+{
+ "generatedAt": "2026-11-05T18:52:26.188Z",
+ "generator": "scripts/extract-lw.mjs",
+ "auditedRepo": {
+  "name": "arfoux/laravel-workers",
+  "path": "../laravel-workers",
+  "head": "1b5a50ac8e57d9b9d56e8403f4248d1d2a02e3b8",
+  "dirtyFiles": 0,
+  "version": "0.4.9",
+  "files": [
+   {
+    "path": "README.md",
+    "sha256": "a6f30b58404b6401",
+    "bytes": 50203
+   },
+   {
+    "path": "MAP.md",
+    "sha256": "6f731b2cdc915d86",
+    "bytes": 123235
+   },
+   {
+    "path": "COMPILED.md",
+    "sha256": "152585d71c8005eb",
+    "bytes": 114029
+   },
+   {
+    "path": "tools/constructs.json",
+    "sha256": "7469e3de871211c8",
+    "bytes": 68240
+   },
+   {
+    "path": "package.json",
+    "sha256": "0d4ccbf7cc8e0d9e",
+    "bytes": 5792
+   },
+   {
+    "path": "notes/PLAYBOOK.local.md",
+    "sha256": "641e5fdb72bf5972",
+    "bytes": 58786
+   }
+  ]
+ },
+ "headline": {
+  "constructs": {
+   "audited": 118,
+   "compiles": 47,
+   "failsLoud": 64,
+   "documented": 7
+  },
+  "facades": {
+   "total": 47,
+   "classified": 47,
+   "compiles": 6,
+   "failsLoud": 41,
+   "documented": 0,
+   "source": "the vendored Illuminate/Support/Facades directory (Laravel 13) - every facade must have a row"
+  },
+  "corpus": {
+   "identical": 55,
+   "cases": 55
+  },
+  "docs": {
+   "pages": 105,
+   "fits": 15,
+   "soft": 59,
+   "hard": 5,
+   "not-applicable": 26,
+   "planned": 13,
+   "blank": 0
+  },
+  "declared": {
+   "constructs": {
+    "compiles": 47,
+    "failsLoud": 64,
+    "documented": 7,
+    "audited": 118
+   },
+   "facades": {
+    "classified": 47,
+    "total": 47
+   },
+   "corpus": {
+    "identical": 55,
+    "cases": 55
+   },
+   "docs": {
+    "withVerdict": 105,
+    "pages": 105
+   }
+  }
+ },
+ "constructs": [
+  {
+   "id": "now",
+   "label": "now()",
+   "use": "$t = now()->toDateTimeString();",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M33",
+   "status": "done",
+   "note": "Carbon; the compiled side follows the request clock (M33) - the wall clock diverged.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M33"
+   }
+  },
+  {
+   "id": "today",
+   "label": "today()",
+   "use": "$t = today()->toDateString();",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M33",
+   "status": "done",
+   "note": "Carbon at midnight (UTC); the request clock again.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M33"
+   }
+  },
+  {
+   "id": "abort_if",
+   "label": "abort_if()",
+   "use": "abort_if(false, 404, 'never');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M33",
+   "status": "done",
+   "note": "Answers null unless it aborts; the status + the message are Laravel's.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M33"
+   }
+  },
+  {
+   "id": "abort_unless",
+   "label": "abort_unless()",
+   "use": "abort_unless(true, 500, 'never');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M33",
+   "status": "done",
+   "note": "The mirror of abort_if.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M33"
+   }
+  },
+  {
+   "id": "log",
+   "label": "Log::info()",
+   "use": "\\Illuminate\\Support\\Facades\\Log::info('hello');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M33",
+   "status": "done",
+   "note": "The platform log (the Workers console) is the padanan for the app log file.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M33"
+   }
+  },
+  {
+   "id": "new_exception",
+   "label": "new RuntimeException()",
+   "use": "throw new \\RuntimeException('boom');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M34",
+   "status": "done",
+   "note": "The built-in exceptions only; the class name + the message are kept, so the 500 matches.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M34"
+   }
+  },
+  {
+   "id": "throw_if",
+   "label": "throw_if()",
+   "use": "throw_if(false, new \\RuntimeException('x'));",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M34",
+   "status": "done",
+   "note": "Throws the given error when the condition says so.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M34"
+   }
+  },
+  {
+   "id": "redirect_with",
+   "label": "redirect()->with()",
+   "use": "return redirect('/x')->with('status', 'saved');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M36",
+   "status": "done",
+   "note": "Flashes into the session for the next request; the proof is the session payload + the Location.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M36"
+   }
+  },
+  {
+   "id": "redirect_with_input",
+   "label": "redirect()->withInput()",
+   "use": "return redirect('/x')->withInput();",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M36",
+   "status": "done",
+   "note": "Flashes _old_input (everything except the dontFlash fields).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M36"
+   }
+  },
+  {
+   "id": "redirect_with_errors",
+   "label": "redirect()->withErrors()",
+   "use": "return redirect('/x')->withErrors(['a' => 'bad']);",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M36",
+   "status": "done",
+   "note": "Flashes the error bag in the ViewErrorBag shape (the M19 validation flow writes the same shape).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M36"
+   }
+  },
+  {
+   "id": "redirect_away",
+   "label": "redirect()->away()",
+   "use": "return redirect()->away('https://example.com');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M37",
+   "status": "done",
+   "note": "An absolute external URL (the compiled redirect keeps it absolute).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M37"
+   }
+  },
+  {
+   "id": "back",
+   "label": "back()",
+   "use": "return back();",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M37",
+   "status": "done",
+   "note": "The Referer, or the session's url.previous, or /.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M37"
+   }
+  },
+  {
+   "id": "str",
+   "label": "Str::slug()",
+   "use": "$s = \\Illuminate\\Support\\Str::slug('A B');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M38",
+   "status": "done",
+   "note": "The PHP-exact subset (slug/limit/upper/lower/studly/camel/snake/kebab/title/contains/startsWith/endsWith/after/before/length/replace*/squish/ucfirst/ucwords/ascii/is/finish/start/random/isUrl) - every value is verified against the real Laravel. The transliteration is portable-ascii's own table (kernel/ascii-map.data.mjs, generated by tools/ascii-map.php; tools/ascii-map-check.mjs keeps it honest), so Str::ascii/Str::slug are byte-identical to PHP 8.3 over the whole BMP.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M38"
+   }
+  },
+  {
+   "id": "env",
+   "label": "env()",
+   "use": "$e = env('APP_ENV');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M37",
+   "status": "done",
+   "note": "The build-time config dump is the padanan (the edge has no .env); only the app.* keys are mapped.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M37"
+   }
+  },
+  {
+   "id": "data_get",
+   "label": "data_get()",
+   "use": "$v = data_get(['a' => 1], 'a');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M37",
+   "status": "done",
+   "note": "Dot/array access on an array or an object (the * wildcard is not ported).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M37"
+   }
+  },
+  {
+   "id": "tap",
+   "label": "tap()",
+   "use": "tap(1, function ($x) { return $x; });",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M37",
+   "status": "done",
+   "note": "Passes the value through a closure (the closure support exists).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M37"
+   }
+  },
+  {
+   "id": "report",
+   "label": "report()",
+   "use": "report(new \\RuntimeException('x'));",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M37",
+   "status": "done",
+   "note": "Reports an exception to the platform log (it does not answer it).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M37"
+   }
+  },
+  {
+   "id": "cache_helper",
+   "label": "cache() (the helper)",
+   "use": "cache('k', 'v');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M37",
+   "status": "done",
+   "note": "The helper form of the Cache facade (the facade compiles).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M37"
+   }
+  },
+  {
+   "id": "cookie_helper",
+   "label": "cookie() (the helper)",
+   "use": "redirect('/x')->withCookie(cookie('k', 'v', 60));",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "audit #722",
+   "status": "done",
+   "note": "CookieJar::make() through the request's jar; withCookie() queues it and the response pipeline emits set-cookie. The factory form (cookie() with no name) still fails loud.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "audit #722"
+   }
+  },
+  {
+   "id": "session_array",
+   "label": "session([...]) (the array form)",
+   "use": "session(['k' => 'v']);",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M37",
+   "status": "done",
+   "note": "The array form writes many keys: session()->put([...]).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M37"
+   }
+  },
+  {
+   "id": "event_dispatch",
+   "label": "Event::dispatch() (an event object)",
+   "use": "\\Illuminate\\Support\\Facades\\Event::dispatch(new PostPublished(1));",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M39c",
+   "status": "done",
+   "note": "The listener is a class, so the build compiles it (the event classes + the listeners, dist/src/classes.generated.mjs). The dispatch is synchronous, like Laravel's.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M39c"
+   }
+  },
+  {
+   "id": "event_dispatch_string",
+   "label": "Event::dispatch() (an event name)",
+   "use": "\\Illuminate\\Support\\Facades\\Event::dispatch('post.created');",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "needs an instance of a compiled event class",
+   "batch": "M39c",
+   "status": "done",
+   "note": "An event name has no class: the edge cannot know which listener answers, so the dispatch would be a silent no-op - dispatch the event object instead.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M39c"
+   }
+  },
+  {
+   "id": "gate",
+   "label": "Gate::allows()",
+   "use": "$ok = \\Illuminate\\Support\\Facades\\Gate::allows('update', $post);",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M39",
+   "status": "done",
+   "note": "The policy is compiled at build time: the abilities, the guest rules, the before() hook.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "gate_class_level",
+   "label": "Gate::allows() (the class-level check)",
+   "use": "$ok = \\Illuminate\\Support\\Facades\\Gate::allows('viewAny', Post::class);",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M39",
+   "status": "done",
+   "note": "Laravel shifts the class name away before the ability is called.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "gate_authorize",
+   "label": "Gate::authorize()",
+   "use": "\\Illuminate\\Support\\Facades\\Gate::authorize('update', $post);",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "it throws an AuthorizationException",
+   "batch": "M39",
+   "status": "todo",
+   "note": "It throws an AuthorizationException (a 403). The edge renders the app's own resources/views/errors/403.blade.php when it exists (the same as every other status error), so the working path is Gate::allows() + abort(403).",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "gate_any",
+   "label": "Gate::any()",
+   "use": "$ok = \\Illuminate\\Support\\Facades\\Gate::any(['update'], $post);",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "allowed: allows, denies",
+   "batch": "M39",
+   "status": "todo",
+   "note": "Only allows() and denies() compile.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "gate_define",
+   "label": "Gate::define()",
+   "use": "\\Illuminate\\Support\\Facades\\Gate::define('update', fn ($user) => true);",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the global Gate registrations are not compiled",
+   "batch": "M39",
+   "status": "todo",
+   "note": "A closure is not compiled - the global Gate registrations stay a port.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "gate_before",
+   "label": "Gate::before()",
+   "use": "\\Illuminate\\Support\\Facades\\Gate::before(fn ($user, $ability) => null);",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the global Gate registrations are not compiled",
+   "batch": "M39",
+   "status": "todo",
+   "note": "The global Gate callbacks are not compiled (the policies are).",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "mail_fluent",
+   "label": "Mail::to()->send()",
+   "use": "\\Illuminate\\Support\\Facades\\Mail::to('a@b.co')->send(new \\App\\Mail\\OrderMail());",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M60",
+   "status": "done",
+   "note": "A mailable is a class: the build compiles it (the dump takes the app's Mail classes, the class compiler emits the class and the kernel's Mailable base carries Laravel's fluent surface) and the mailer sends the payload Laravel sends - the recipients, the subject and the rendered view (the mailable's data goes into the view). The byte-for-byte proof is the shadow: the PHP oracle captures Laravel's MessageSent event (the from/to/cc/bcc/replyTo/subject/html/text) and the harness compares those fields with the kernel mailer's outbox - all 8 fields are identical, the log line is not compared. The methods the kernel mailer does not implement (raw, html, queue, later) fail loud.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M60"
+   }
+  },
+  {
+   "id": "mail_send_view",
+   "label": "Mail::send() (a view name)",
+   "use": "\\Illuminate\\Support\\Facades\\Mail::send('emails.welcome', ['name' => 'x']);",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "a view name is not a payload at the edge",
+   "batch": "M60",
+   "status": "done",
+   "note": "Laravel's Mailer::send() has two shapes: a Mailable INSTANCE (it is sent as it is) and a VIEW NAME (Laravel renders the view with the data and sends THAT - the route answers 200 and the mail goes out). The edge has only the first shape: the compiled mailer carries a payload (a compiled Mailable, or an object with to/subject/html), so a view name throws at request time (\"mail(): the message is not a payload\") and the route answers 500 - the build refuses the view shape instead of shipping a route that 500s where Laravel sends the mail. A mailable still compiles (Mail::send(new OrderMail()) and Mail::to($user)->send(new OrderMail())); a dynamic first argument is NOT refused (it can hold a mailable and the build cannot prove which it is - refusing it would refuse a legal send).",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M60"
+   }
+  },
+  {
+   "id": "queue_push",
+   "label": "Queue::push()",
+   "use": "\\Illuminate\\Support\\Facades\\Queue::push(\\App\\Jobs\\SendMail::class);",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the job would never run at the edge",
+   "batch": "M39",
+   "status": "done",
+   "note": "The FACADE is what stays refused here: Queue::push() takes a class-name string the edge cannot resolve to a compiled class, so nothing would consume the row - Job::dispatch() on a compiled job class is the supported form (M63). Without a consumer the job would never run at the edge: the worker has no queue handler, so nothing consumes the queue binding, and the binding carries a JSON body, not a PHP job. The paths that work: a Cloudflare Queues binding with a consumer you write (a limited version is on the Workers free plan; the paid plan charges per operation), or a D1 table the cron trigger reads (a compiled job class writes the row through Job::dispatch() - M63 - or a port handler does). In Laravel the job is queued (or run inline by the sync driver) and the route answers 200.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "job_dispatch",
+   "label": "Job::dispatch() on a compiled job class",
+   "use": "\\App\\Jobs\\SendWelcomeNote::dispatch('hi');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M63",
+   "status": "done",
+   "note": "A job class the build compiles (app/Jobs): dispatch() writes a row into the D1 lw_jobs table and the CRON TRIGGER drains it, so the job runs after the response (Laravel's database driver). The build refuses the push when the worker has no cron trigger - the job would never run - and it also refuses a push whose job class did NOT compile: the drain builds its handler map from the compiled classes, so a job the class compiler refused has no handle() for the drain and the row would be dropped unseen. Laravel's own job traits (Dispatchable, Queueable, InteractsWithQueue, SerializesModels) are allowed - their members are answered at the call site or are PHP-serializer-only - but a body that CALLS one of their members ($this->release(3)) is refused. The Queue FACADE (Queue::push) stays refused: it takes a class-name string the edge cannot resolve to a compiled class.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M63"
+   }
+  },
+  {
+   "id": "storage_disk",
+   "label": "Storage::disk() (the default disk)",
+   "use": "\\Illuminate\\Support\\Facades\\Storage::disk('local')->put('a.txt', 'x');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M39",
+   "status": "done",
+   "note": "The default disk is the compiled object store (the D1 blob store, or R2 when bound).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "storage_disk_named",
+   "label": "Storage::disk() (a named disk)",
+   "use": "\\Illuminate\\Support\\Facades\\Storage::disk('public')->put('a.txt', 'x');",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "has ONE object store",
+   "batch": "M39",
+   "status": "done",
+   "note": "A named disk needs a bucket of its own (R2 asks for a credit card); the compiled rung has one store.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "cache_tags",
+   "label": "Cache::tags()",
+   "use": "\\Illuminate\\Support\\Facades\\Cache::tags('a')->put('k', 'v');",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the compiled cache store is the D1 `database` store",
+   "batch": "M39",
+   "status": "done",
+   "note": "The compiled cache store is the D1 database store, which has no tags: in Laravel this route 500s with BadMethodCallException(\"This cache store does not support tagging.\"); the build refuses the route before it ships (stricter than Laravel, not a parity), and a taggable store (redis/memcached) is not compiled.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M39"
+   }
+  },
+  {
+   "id": "blade_layout",
+   "label": "Blade @extends (a layout)",
+   "use": "<?php $__env->startSection('title', 'T'); ?>\n<?php $__env->startSection('content'); ?>\n<p>hi</p>\n<?php $__env->stopSection(); ?>\n<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "The sections travel to the layout (the shadow harness proves the bytes).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "paginate",
+   "label": "Model::paginate()",
+   "use": "$p = \\App\\Models\\Post::paginate(10);",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "The LengthAwarePaginator (the items, the total, the pages, the URLs) + the pagination links (the framework's pagination::tailwind view is compiled at build time).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "php_translation",
+   "label": "The translation helper (__())",
+   "use": "$s = __(\"pagination.previous\");",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "The strings are dumped at build time (the app's lang/ files + the framework's fallback); the place-holders are replaced like Laravel does.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "php_cast",
+   "label": "A PHP cast ((string) $x)",
+   "use": "$s = (string) 5;",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "The scalar casts with PHP's own semantics: (string), (int), (bool), (float).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "php_cast_object",
+   "label": "The (object) cast ((object) $x)",
+   "use": "$o = (object) ['a' => 1];",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "PHP's cast to stdClass (rt.objectCast, oracle-probed): a list becomes an object keyed by the stringified indices, an object is answered as-is, null is the empty object, a scalar wraps under scalar. The result carries the stdClass marker, so json_encode() answers {}/{\"0\":..} and never the array shape ([]) - json_decode() with $assoc = false and the object model cast mark the same way",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "nullsafe_access",
+   "label": "Null-safe access ($a?->b)",
+   "use": "$v = $a?->b;",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "PHP's ?->: a null/undefined receiver answers null, and that null propagates through any later -> links in the same chain (rt.nsprop, rt.nsmethod for the method form).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "route_model_binding",
+   "label": "Route-model binding (a typed param)",
+   "use": "$title = $post->title;",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "The model comes from the route segment (Laravel's implicit binding); a missing model is a 404.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "relations",
+   "label": "Eloquent relations ($post->comments())",
+   "use": "$c = $post->comments();",
+   "verdict": "fails-loud",
+   "code": "LW003",
+   "reason": "is not compiled (an Eloquent relation?)",
+   "batch": "M41",
+   "status": "done",
+   "note": "A relation is not compiled: the build stops (LW003). The eager loading (with()) is not compiled at the edge either - the relations are a planned milestone (M64), so a route that reads one needs a port handler until then.",
+   "audit": {
+    "build": "⛔ fails loud (LW003)",
+    "batch": "M41"
+   }
+  },
+  {
+   "id": "file_upload",
+   "label": "File upload ($request->file())",
+   "use": "$f = $request->file('avatar');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "The multipart body is parsed at the edge: the file object carries the metadata (the name, the type the browser declared, the size) and the store (the app's default disk). Byte-proven by the shadow harness.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "file_store_as",
+   "label": "The upload is stored ($file->storeAs())",
+   "use": "$p = $f->storeAs('uploads', 'a.txt');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "The object store (the D1 blob store on the free plan, R2 with a bucket of its own): the path is the disk-relative one Laravel returns (trim($path.'/'.$name, '/')).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "file_store",
+   "label": "The upload is stored under a random name ($file->store())",
+   "use": "$p = $f->store('uploads');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "The name is a random hash (Str::random(40)) + the extension; the extension comes from the type the browser declared (Laravel sniffs the content with finfo).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "file_mime_type",
+   "label": "The content type of the upload ($file->getMimeType())",
+   "use": "$m = $f->getMimeType();",
+   "verdict": "fails-loud",
+   "code": "LW003",
+   "reason": "it reads the file's content type (finfo)",
+   "batch": "M40",
+   "status": "done",
+   "note": "The content type is read from the file's bytes (finfo): the edge cannot sniff the content like PHP does, so the build stops (LW003).",
+   "audit": {
+    "build": "⛔ fails loud (LW003)",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "file_rule_mimes",
+   "label": "A mimes/mimetypes rule on an upload",
+   "use": "$request->validate(['avatar' => ['required', 'file', 'mimes:png']]);",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "PHP compares what finfo sniffs; the edge reads the image HEADER instead (kernel/image.mjs) and answers with the same guessExtension() map Symfony uses - so mimes:jpg,png,webp (and mimetypes:image/jpeg,...) answer Laravel's verdict, including the guessExtension() sharp edge (mimes:jpeg rejects a real JPEG in PHP too). A parameter naming any other content (pdf, svg, docx, bmp) still fails loud (LW002): that verdict would be a guess.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "file_rule_mimes_unanswerable",
+   "label": "A mimes rule naming a format the edge cannot sniff",
+   "use": "$request->validate(['avatar' => ['required', 'file', 'mimes:png,pdf']]);",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "it reads the file's *content* type through finfo",
+   "batch": "M40",
+   "status": "done",
+   "note": "mimes compiles only for the formats the header read can name (jpg, jpeg, png, gif, webp, avif, heic, heif): a parameter naming any other content (pdf, svg, docx, bmp) stops the build (LW002) and NAMES the parameter, because the verdict PHP reaches comes from finfo.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "file_rule_image",
+   "label": "An image/dimensions rule on an upload",
+   "use": "$request->validate(['photo' => ['required', 'image', 'dimensions:min_width=2']]);",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M69",
+   "status": "done",
+   "note": "image and dimensions are getimagesize(), a HEADER read (ValidatesAttributes::validateImage/validateDimensions): the edge reads the same header (kernel/image.mjs) and applies the same named checks, so the verdict is Laravel's. A mimes/mimetypes parameter naming a format that read cannot sniff stays refused, like any other finfo rule.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M69"
+   }
+  },
+  {
+   "id": "request_files_property",
+   "label": "The files bag as a method ($request->files())",
+   "use": "$files = $request->files();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "in Laravel it is a property (Symfony's FileBag), not a method",
+   "batch": "M40",
+   "status": "done",
+   "note": "In Laravel $request->files is a property (Symfony's FileBag), not a method: the build stops (LW002) and points at $request->file() / $request->allFiles().",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "options_route",
+   "label": "An OPTIONS route",
+   "use": null,
+   "verdict": "documented",
+   "code": null,
+   "reason": null,
+   "batch": "M40",
+   "status": "done",
+   "note": "The compiled side answers Laravel's automatic OPTIONS response (200 + the Allow header - byte-proven); a CORS config makes the build skip the route.",
+   "audit": {
+    "build": "documented (build level)",
+    "batch": "M40"
+   }
+  },
+  {
+   "id": "relation_property",
+   "label": "A relation read as a property ($post->comments)",
+   "use": "$c = $post->comments;",
+   "verdict": "fails-loud",
+   "code": "LW003",
+   "reason": "is not compiled (a relation or an accessor?)",
+   "batch": "M42",
+   "status": "done",
+   "note": "A relation (or an accessor) read as a property is not compiled: the build stops (LW003). It used to answer null - a wrong answer, silently.",
+   "audit": {
+    "build": "⛔ fails loud (LW003)",
+    "batch": "M42"
+   }
+  },
+  {
+   "id": "rule_object",
+   "label": "A rule object (Rule::file()->max())",
+   "use": "$v = $request->validate(['avatar' => [\\Illuminate\\Validation\\Rule::file()->max(1024)]]);",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "a rule object",
+   "batch": "M43",
+   "status": "todo",
+   "note": "A rule object in a CONTROLLER's validate() call is a class: the compiler cannot evaluate it at build time (the rules live in the controller's source), so the rule would be silently ignored and the validation would differ. The build stops and names what it would take. (In a FormRequest the dump normalizes the object to its string form - the row below.)",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M43"
+   }
+  },
+  {
+   "id": "form_request_rule_object",
+   "label": "A rule object in a FormRequest",
+   "use": null,
+   "verdict": "documented",
+   "code": null,
+   "reason": null,
+   "batch": "M43/M62",
+   "status": "done",
+   "note": "The FormRequest dump reads the rules Laravel itself builds and NORMALIZES a rule object to its string form (Laravel hands the validator the object and the validator reads that string): Rule::in(['a','b']) becomes in:\"a\",\"b\" - which the kernel parses exactly like Laravel (M61a). A CONDITIONAL rule object is refused (the row below).",
+   "audit": {
+    "build": "documented (build level)",
+    "batch": "M43/M62"
+   }
+  },
+  {
+   "id": "form_request_conditional_rule_object",
+   "label": "A conditional rule object in a FormRequest",
+   "use": null,
+   "verdict": "documented",
+   "code": null,
+   "reason": null,
+   "batch": "M62",
+   "status": "done",
+   "note": "A conditional rule object (Rule::requiredIf(true), Rule::when(...)) is refused: its string form is the CONDITION evaluated at build time (RequiredIf::__toString() returns 'required' or ''), so the edge would bake the build-time branch into the rule - a request Laravel accepts could be rejected (or the other way round). The dump stops with that reason (LW003).",
+   "audit": {
+    "build": "documented (build level)",
+    "batch": "M62"
+   }
+  },
+  {
+   "id": "prepare_for_validation",
+   "label": "prepareForValidation() (overridden)",
+   "use": null,
+   "verdict": "documented",
+   "code": null,
+   "reason": null,
+   "batch": "M62d",
+   "status": "done",
+   "note": "The hook is COMPILED: the build compiles the FormRequest class (the dump registers it), the compiled handler runs the hook BEFORE the validation (Laravel's order - ValidatesWhenResolvedTrait::validateResolved), and the input the hook prepares is what the rules see. The compiled class extends the kernel's kernel/form-request.mjs - the request surface the hook uses (merge(), input(), all()).",
+   "audit": {
+    "build": "documented (build level)",
+    "batch": "M62d"
+   }
+  },
+  {
+   "id": "form_request_other_hooks",
+   "label": "A FormRequest that overrides after() / validationData() / passedValidation()",
+   "use": null,
+   "verdict": "documented",
+   "code": null,
+   "reason": null,
+   "batch": "M62f",
+   "status": "done",
+   "note": "All three hooks run in the compiled lifecycle, in Laravel's order: validationData() is the data source, after() registers its RETURN VALUE as a validator callback, and passedValidation() runs after the rules pass. Proven by the shadow (POST /hooked-request-demo 422/422 for the after() refusal and 200/200 carrying the passedValidation marker).",
+   "audit": {
+    "build": "documented (build level)",
+    "batch": "M62f"
+   }
+  },
+  {
+   "id": "form_request_with_validator",
+   "label": "A FormRequest that overrides withValidator()",
+   "use": null,
+   "verdict": "documented",
+   "code": null,
+   "reason": null,
+   "batch": "M62f",
+   "status": "done",
+   "note": "Laravel calls the hook with the validator right after it is built (Foundation/Http/FormRequest.php:110), so the app's custom messages and its after() callbacks run. The compiled class carries the hook and the lifecycle calls it with the kernel's validator, in Laravel's order. Proven by the shadow (POST /hooked-request-demo 422/422 byte-identical when withValidator() refuses the flag) and by the compiled handler's hooks: [...] list.",
+   "audit": {
+    "build": "documented (build level)",
+    "batch": "M62f"
+   }
+  },
+  {
+   "id": "listener_service",
+   "label": "A listener that injects a service",
+   "verdict": "fails-loud",
+   "code": null,
+   "reason": "the build does not compile it",
+   "batch": "M43",
+   "status": "done",
+   "note": "A service the build does not compile: the edge has no container and no file for it, so the constructor dependency is a build error (the build names the class). A service the build DOES compile is injected (the edge builds it) and a framework service is adapted (the worker hands the live one down).",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M43"
+   }
+  },
+  {
+   "id": "listener_queued",
+   "label": "A queued listener (ShouldQueue)",
+   "verdict": "fails-loud",
+   "code": null,
+   "reason": "is queued (ShouldQueue)",
+   "batch": "M43",
+   "status": "done",
+   "note": "Laravel pushes a queued listener to the queue (it runs later); the edge's queue path runs a JOB class (app/Jobs) through the cron drain, and a queued listener is not compiled as one, so running it inline would be a different behaviour. The build stops and the route that dispatches the event names the reason.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M43"
+   }
+  },
+  {
+   "id": "listener_service_compiled",
+   "label": "A listener that injects an app service the build compiles",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M44",
+   "status": "done",
+   "note": "The edge builds the service itself: the build compiles it (the class + the services it injects) and the runtime hands it to the listener. The dependency is recorded in the compiled class, so the edge never guesses.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M44"
+   }
+  },
+  {
+   "id": "listener_framework_service",
+   "label": "A listener that injects a framework service (the mailer)",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M44",
+   "status": "done",
+   "note": "The edge has no container: the worker hands the live service down (the mailer) and the compiled listener gets it. Its async methods are awaited in the compiled body (a promise must never leak into the response).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M44"
+   }
+  },
+  {
+   "id": "listener_queue_push",
+   "label": "A listener that pushes to the queue",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "Queue::push() is not supported",
+   "batch": "M45",
+   "status": "done",
+   "note": "The refusal holds in a compiled class too: Queue::push() names the job as a class-name string, which the edge cannot resolve to a compiled class, so nothing would consume the row (the compiled path is Job::dispatch(), M63).",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M45"
+   }
+  },
+  {
+   "id": "listener_cache_tags",
+   "label": "A listener that uses a tagged cache",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "Cache::tags() is not supported",
+   "batch": "M45",
+   "status": "done",
+   "note": "The D1 database store has no tags: in Laravel this route 500s with BadMethodCallException(\"This cache store does not support tagging.\"); the build refuses the route before it ships (stricter than Laravel, not a parity).",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M45"
+   }
+  },
+  {
+   "id": "listener_broadcast",
+   "label": "A broadcast listener (ShouldBroadcast)",
+   "verdict": "fails-loud",
+   "code": null,
+   "reason": "is a broadcast listener (ShouldBroadcast)",
+   "batch": "M49",
+   "status": "done",
+   "note": "Laravel broadcasts the event to the channels after the response (the broadcast itself is queued). The edge has no broadcast driver, so the notification would never be sent - a silent no-op, so the build stops and the route that dispatches the event names the reason.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "listener_after_commit",
+   "label": "A listener dispatched after the commit (ShouldDispatchAfterCommit)",
+   "verdict": "fails-loud",
+   "code": null,
+   "reason": "is dispatched after the commit (ShouldDispatchAfterCommit)",
+   "batch": "M49",
+   "status": "done",
+   "note": "Laravel defers the listener until the database transaction is committed. The edge has no transaction, so the timing would differ - the build stops and the route that dispatches the event names the reason.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "event_dispatch_until",
+   "label": "Event::dispatchUntil() (the halt variant)",
+   "use": "\\Illuminate\\Support\\Facades\\Event::dispatchUntil(new PostPublished(1));",
+   "verdict": "fails-loud",
+   "code": null,
+   "reason": "it stops the chain at the first non-null answer",
+   "batch": "M49",
+   "status": "done",
+   "note": "Laravel's dispatchUntil() stops the chain at the first non-null answer and returns it. The compiled dispatch runs EVERY listener and answers the array of the responses, so the compiled rung cannot answer Laravel's value here - it fails loud with the halt semantics named.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_app",
+   "label": "The App facade",
+   "use": "        \\Illuminate\\Support\\Facades\\App::configure();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the App facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The App facade is not compiled at the edge (Laravel 13 lists 142 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_artisan",
+   "label": "The Artisan facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Artisan::commandStartedAt();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Artisan facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Artisan facade is not compiled at the edge (Laravel 13 lists 18 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_auth",
+   "label": "The Auth facade",
+   "use": "        Auth::check();",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M49",
+   "status": "done",
+   "note": "The Auth facade has a compiled surface (Laravel 13 lists 58 methods; the probe uses a method that compiles).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_blade",
+   "label": "The Blade facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Blade::compile();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Blade facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Blade facade is not compiled at the edge (Laravel 13 lists 43 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_broadcast",
+   "label": "The Broadcast facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Broadcast::routes();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Broadcast facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Broadcast facade is not compiled at the edge (Laravel 13 lists 30 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_bus",
+   "label": "The Bus facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Bus::chain();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Bus facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Bus facade is not compiled at the edge (Laravel 13 lists 48 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_cache",
+   "label": "The Cache facade",
+   "use": "        Cache::get('k');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M49",
+   "status": "done",
+   "note": "The Cache facade has a compiled surface (Laravel 13 lists 65 methods; the probe uses a method that compiles).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_cloud",
+   "label": "The Cloud facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Cloud::hosted();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Cloud facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Cloud facade is not compiled at the edge (Laravel 13 lists 8 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_concurrency",
+   "label": "The Concurrency facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Concurrency::driver();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Concurrency facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Concurrency facade is not compiled at the edge (Laravel 13 lists 14 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_config",
+   "label": "The Config facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Config::all();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Config facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Config facade is not compiled at the edge (Laravel 13 lists 17 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_context",
+   "label": "The Context facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Context::all();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Context facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Context facade is not compiled at the edge (Laravel 13 lists 43 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_cookie",
+   "label": "The Cookie facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Cookie::getQueuedCookies();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Cookie facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Cookie facade is not compiled at the edge (Laravel 13 lists 15 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_crypt",
+   "label": "The Crypt facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Crypt::getKey();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Crypt facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Crypt facade is not compiled at the edge (Laravel 13 lists 11 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_db",
+   "label": "The DB facade",
+   "use": "        \\Illuminate\\Support\\Facades\\DB::connection();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the DB facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The DB facade is not compiled at the edge (Laravel 13 lists 113 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_date",
+   "label": "The Date facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Date::useDefault();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Date facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Date facade is not compiled at the edge (Laravel 13 lists 95 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_event",
+   "label": "The Event facade",
+   "use": "        Event::dispatch(new PostPublished(1));",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "Event::dispatch() needs an instance of a compiled event class",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Event::dispatch() form IS compiled (the event class and its listeners), but it needs an INSTANCE of a compiled event class - the build refuses it with that reason. The other 32 methods of the facade (Laravel 13 lists 33) are not compiled.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_exceptions",
+   "label": "The Exceptions facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Exceptions::register();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Exceptions facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Exceptions facade is not compiled at the edge (Laravel 13 lists 34 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_facade",
+   "label": "The Facade facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Facade::x();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Facade facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Facade facade is not compiled at the edge (Laravel 13 lists 0 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_file",
+   "label": "The File facade",
+   "use": "        \\Illuminate\\Support\\Facades\\File::when();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the File facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The File facade is not compiled at the edge (Laravel 13 lists 53 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_gate",
+   "label": "The Gate facade",
+   "use": "        Gate::allows('view', new PostPublished(1));",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "new PostPublished() is not supported - only the PHP built-in exceptions compile (Exception",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Gate::allows()/Gate::denies() forms ARE compiled (the compiled policy decides), but this construct builds an exception object - the build refuses it with that reason. The other 25 methods of the facade (Laravel 13 lists 26) are not compiled.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_hash",
+   "label": "The Hash facade",
+   "use": "        Hash::make('x');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M49",
+   "status": "done",
+   "note": "The Hash facade has a compiled surface (Laravel 13 lists 15 methods; the probe uses a method that compiles).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_http",
+   "label": "The Http facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Http::response();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Http facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Http facade is not compiled at the edge (Laravel 13 lists 99 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_image",
+   "label": "The Image facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Image::getDefaultDriver();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Image facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Image facade is not compiled at the edge (Laravel 13 lists 15 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_lang",
+   "label": "The Lang facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Lang::getSelector();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Lang facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Lang facade is not compiled at the edge (Laravel 13 lists 30 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_log",
+   "label": "The Log facade",
+   "use": "        Log::info('x');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M49",
+   "status": "done",
+   "note": "The Log facade has a compiled surface (Laravel 13 lists 31 methods; the probe uses a method that compiles).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_mail",
+   "label": "The Mail facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Mail::to('a@b.co');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M60",
+   "status": "done",
+   "note": "The Mail facade is compiled: the kernel's mailer implements Laravel's PendingMail (to/cc/bcc/replyTo + send()), so the fluent form compiles. The shadow proves the payload against the real app (the MessageSent fields vs the kernel outbox - all 8 fields identical). The methods it does not implement (raw, html, queue, later) fail loud - a mail that silently lost its cc would be a wrong answer.",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M60"
+   }
+  },
+  {
+   "id": "facade_maintenancemode",
+   "label": "The MaintenanceMode facade",
+   "use": "        \\Illuminate\\Support\\Facades\\MaintenanceMode::getDefaultDriver();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the MaintenanceMode facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The MaintenanceMode facade is not compiled at the edge (Laravel 13 lists 7 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_notification",
+   "label": "The Notification facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Notification::channel();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Notification facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Notification facade is not compiled at the edge (Laravel 13 lists 34 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_paralleltesting",
+   "label": "The ParallelTesting facade",
+   "use": "        \\Illuminate\\Support\\Facades\\ParallelTesting::callSetUpProcessCallbacks();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the ParallelTesting facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The ParallelTesting facade is not compiled at the edge (Laravel 13 lists 16 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_password",
+   "label": "The Password facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Password::broker();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Password facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Password facade is not compiled at the edge (Laravel 13 lists 11 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_pipeline",
+   "label": "The Pipeline facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Pipeline::thenReturn();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Pipeline facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Pipeline facade is not compiled at the edge (Laravel 13 lists 15 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_process",
+   "label": "The Process facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Process::forever();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Process facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Process facade is not compiled at the edge (Laravel 13 lists 39 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_queue",
+   "label": "The Queue facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Queue::connected();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "Queue::connected() is not supported",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Queue facade is not compiled at the edge (Laravel 13 lists 85 methods): the build refuses every method with its own reason - the queue would never run at the edge (the worker exports no consumer for a Cloudflare Queues binding, and the binding carries a JSON body, not a PHP job; the compiled path is the D1 lw_jobs table the cron trigger drains, M63). A port handler (or a Cloudflare Queues binding) answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_ratelimiter",
+   "label": "The RateLimiter facade",
+   "use": "        \\Illuminate\\Support\\Facades\\RateLimiter::flushMacros();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the RateLimiter facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The RateLimiter facade is not compiled at the edge (Laravel 13 lists 18 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_redirect",
+   "label": "The Redirect facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Redirect::back();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Redirect facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Redirect facade is not compiled at the edge (Laravel 13 lists 19 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_redis",
+   "label": "The Redis facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Redis::connection();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Redis facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Redis facade is not compiled at the edge (Laravel 13 lists 302 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_request",
+   "label": "The Request facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Request::capture();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Request facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Request facade is not compiled at the edge (Laravel 13 lists 192 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_response",
+   "label": "The Response facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Response::make();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Response facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Response facade is not compiled at the edge (Laravel 13 lists 21 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_route",
+   "label": "The Route facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Route::getLastGroupPrefix();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Route facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Route facade is not compiled at the edge (Laravel 13 lists 101 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_schedule",
+   "label": "The Schedule facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Schedule::events();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Schedule facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Schedule facade is not compiled at the edge (Laravel 13 lists 84 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_schema",
+   "label": "The Schema facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Schema::morphUsingUuids();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Schema facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Schema facade is not compiled at the edge (Laravel 13 lists 52 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_session",
+   "label": "The Session facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Session::shouldBlock();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Session facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Session facade is not compiled at the edge (Laravel 13 lists 70 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_storage",
+   "label": "The Storage facade",
+   "use": "        Storage::get('x');",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M49",
+   "status": "done",
+   "note": "The Storage facade has a compiled surface (Laravel 13 lists 84 methods; the probe uses a method that compiles).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_url",
+   "label": "The URL facade",
+   "use": "        \\Illuminate\\Support\\Facades\\URL::full();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the URL facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The URL facade is not compiled at the edge (Laravel 13 lists 46 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_validator",
+   "label": "The Validator facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Validator::includeUnvalidatedArrayKeys();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Validator facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Validator facade is not compiled at the edge (Laravel 13 lists 15 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_view",
+   "label": "The View facade",
+   "use": "        \\Illuminate\\Support\\Facades\\View::incrementRender();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the View facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The View facade is not compiled at the edge (Laravel 13 lists 79 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "facade_vite",
+   "label": "The Vite facade",
+   "use": "        \\Illuminate\\Support\\Facades\\Vite::preloadedAssets();",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "the Vite facade is not compiled at the edge",
+   "batch": "M49",
+   "status": "done",
+   "note": "The Vite facade is not compiled at the edge (Laravel 13 lists 32 methods): the build refuses it with that reason - a port handler answers it.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "M49"
+   }
+  },
+  {
+   "id": "api_resource",
+   "label": "an API resource (return new PostResource($post))",
+   "use": "return new \\App\\Http\\Resources\\PostResource($post);",
+   "verdict": "compiles",
+   "code": null,
+   "reason": null,
+   "batch": "M66",
+   "status": "done",
+   "note": "The controller answers a JsonResource; the Router's prepareResponse() wraps it in a ResourceResponse - {\"data\": {...}, ...with($request)} (JsonResource::toArray + the $wrap key, ResourceResponse.php:31-52). The app declares only toArray()/with(); the rest is the kernel base. Byte-proven by the shadow (GET /resource-demo identical) and by compiler/tests/resource-class.test.mjs; the audit probes it as a controller fragment with the class registry the build passes. A body that needs an await fails loud (the response path is synchronous).",
+   "audit": {
+    "build": "✅ compiles",
+    "batch": "M66"
+   }
+  },
+  {
+   "id": "form_request_validator_factory",
+   "label": "A FormRequest that overrides validator()",
+   "use": null,
+   "verdict": "documented",
+   "code": null,
+   "reason": null,
+   "batch": "M62f",
+   "status": "done",
+   "note": "Laravel asks the app's own factory for the validator (FormRequest::getValidatorInstance()), so an override decides the rules, the messages and the factory itself. The edge has ONE validator factory, so the dump refuses the class (LW003, tools/formrequest-dump.php) and the build stops instead of validating with different rules than Laravel.",
+   "audit": {
+    "build": "documented (build level)",
+    "batch": "M62f"
+   }
+  },
+  {
+   "id": "try_catch",
+   "label": "A try/catch/finally statement",
+   "use": "try { $x = 1; } catch (Throwable $e) { $y = 2; } finally { $z = 3; }\n            return response(\"ok\");",
+   "verdict": "fails-loud",
+   "code": "LW002",
+   "reason": "unsupported construct: try",
+   "batch": "GAP",
+   "status": "open",
+   "note": "The transpiler has no try handler, so the whole route (and any class method that carries one) fails the build with LW002 (MAP.md 6b lists try/catch/finally as UNSUPPORTED - matches). The tracked gap is the missing APP-SOURCE SWEEP rule: a try/catch that no compiled route touches is silent until it is reached. Rewrite without try/catch, or port the route.",
+   "audit": {
+    "build": "⛔ fails loud (LW002)",
+    "batch": "GAP"
+   }
+  }
+ ],
+ "docsPages": [
+  {
+   "page": "ai",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "dev tooling (Boost/AI guidelines)"
+  },
+  {
+   "page": "ai-sdk",
+   "klass": "soft",
+   "planned": "ph3",
+   "note": "HTTP + streaming via fetch fits"
+  },
+  {
+   "page": "artisan",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local-only; edge CLI equivalents"
+  },
+  {
+   "page": "authentication",
+   "klass": "soft",
+   "planned": null,
+   "note": "kernel SessionGuard oracle-verified (M14); wired M15 to M20 (auth.test 4/4, login-flow E2E)"
+  },
+  {
+   "page": "authorization",
+   "klass": "soft",
+   "planned": "ph2",
+   "note": "the Gate facade compiles: Gate::allows()/denies() answer from the compiled policy (the guest rules included); authorize()/any()/define()/before() fail loud"
+  },
+  {
+   "page": "billing",
+   "klass": "soft",
+   "planned": "ph3",
+   "note": "Cashier via fetch; webhooks = HMAC routes (padanan)"
+  },
+  {
+   "page": "blade",
+   "klass": "soft",
+   "planned": null,
+   "note": "views compile (echo/if/loops/expr); the layouts compile too (M40: the sections travel to the layout, @extends/@section/@yield); the Blade components (<x-...>) stay a port"
+  },
+  {
+   "page": "boost",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "dev tooling only"
+  },
+  {
+   "page": "broadcasting",
+   "klass": "hard",
+   "planned": null,
+   "note": "SSE/polling padanan; WS via DO/external"
+  },
+  {
+   "page": "cache",
+   "klass": "soft",
+   "planned": null,
+   "note": "the Cache facade + the cache() helper compile to the D1 database store; the tags need a taggable store (LW002, the D1 store has none, Laravel throws there too); a non-database driver fails the build (it would read and write a different store)"
+  },
+  {
+   "page": "cashier-paddle",
+   "klass": "soft",
+   "planned": "ph3",
+   "note": "same as billing (padanan)"
+  },
+  {
+   "page": "collections",
+   "klass": "soft",
+   "planned": null,
+   "note": "kernel shim subset; fail loud per method"
+  },
+  {
+   "page": "concurrency",
+   "klass": "soft",
+   "planned": null,
+   "note": "Promise.all; 6-conn limit → batch"
+  },
+  {
+   "page": "configuration",
+   "klass": "fits",
+   "planned": null,
+   "note": "frozen at build + secrets"
+  },
+  {
+   "page": "console-tests",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local; edge = parity harness"
+  },
+  {
+   "page": "container",
+   "klass": "soft",
+   "planned": null,
+   "note": "compile-time DI subset"
+  },
+  {
+   "page": "context",
+   "klass": "soft",
+   "planned": null,
+   "note": "request-scoped shim"
+  },
+  {
+   "page": "contracts",
+   "klass": "fits",
+   "planned": null,
+   "note": "type-erased; two-sided custom drivers"
+  },
+  {
+   "page": "contributions",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "meta"
+  },
+  {
+   "page": "controllers",
+   "klass": "soft",
+   "planned": null,
+   "note": "M10/M17/M22/M23/M28: GET/POST/PUT/PATCH/DELETE actions compiled (one handler per verb); \\->validate() + flash (M19); edirect()->intended() + session regen/invalidate (M20); FormRequests, Cache/Hash/Storage facades, class constants and Eloquent writes compile (M23/M28); the route-model binding compiles (M40: show(Post $post) fetches the model from the segment); pagination + Eloquent relations still a port; fail-loud LW002 (unsupported construct) / LW003; REQUEST_CALL synced to kernel (#2: date removed, str added)"
+  },
+  {
+   "page": "csrf",
+   "klass": "fits",
+   "planned": null,
+   "note": "session token; @csrf/@method"
+  },
+  {
+   "page": "database",
+   "klass": "soft",
+   "planned": null,
+   "note": "D1 builder: where/or/join/group/having"
+  },
+  {
+   "page": "database-testing",
+   "klass": "soft",
+   "planned": null,
+   "note": "sqlite↔D1 parity harness"
+  },
+  {
+   "page": "deployment",
+   "klass": "fits",
+   "planned": null,
+   "note": "build → wrangler deploy (D1 + assets)"
+  },
+  {
+   "page": "documentation",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "meta (TOC page)"
+  },
+  {
+   "page": "dusk",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local browser tests"
+  },
+  {
+   "page": "eloquent",
+   "klass": "soft",
+   "planned": null,
+   "note": "schema-driven ORM subset"
+  },
+  {
+   "page": "eloquent-collections",
+   "klass": "soft",
+   "planned": null,
+   "note": "collections shim"
+  },
+  {
+   "page": "eloquent-factories",
+   "klass": "soft",
+   "planned": null,
+   "note": "local dev tooling; no runtime code (unverified)"
+  },
+  {
+   "page": "eloquent-mutators",
+   "klass": "soft",
+   "planned": null,
+   "note": "compiled accessors/casts; build-time fillable dump; hashed cast"
+  },
+  {
+   "page": "eloquent-relationships",
+   "klass": "soft",
+   "planned": null,
+   "note": "lazy + eager subset"
+  },
+  {
+   "page": "eloquent-resources",
+   "klass": "soft",
+   "planned": null,
+   "note": "compiled toJSON subset"
+  },
+  {
+   "page": "eloquent-serialization",
+   "klass": "soft",
+   "planned": null,
+   "note": "toArray/toJson subset"
+  },
+  {
+   "page": "encryption",
+   "klass": "soft",
+   "planned": null,
+   "note": "AES-CBC+HMAC WebCrypto; serialize subset"
+  },
+  {
+   "page": "envoy",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local (SSH deploys)"
+  },
+  {
+   "page": "errors",
+   "klass": "soft",
+   "planned": null,
+   "note": "build-time compiled error views when present; an unhandled exception renders that 500 (JSON requests get Laravel's {\"message\":\"Server Error\"}); status-only stubs otherwise; new <PHP exception> + throw_if/throw_unless compile (M34)"
+  },
+  {
+   "page": "events",
+   "klass": "soft",
+   "planned": null,
+   "note": "Event::dispatch(new X(...)) compiles (M39c: the build compiles the event classes + their listeners, dist/src/classes.generated.mjs, and the dispatch calls them synchronously, like Laravel); a dispatch of an event name fails loud (no class, no listener); a queued listener fails loud (the edge has no queue consumer) → port; a listener that injects a service compiles (M44: the edge builds the app services the build compiled and adapts the framework services, kernel/service-adapters.mjs: the mailer, the logger, the worker hands the live one down); a service the build does not compile fails loud (the edge has no container and no file for it)"
+  },
+  {
+   "page": "facades",
+   "klass": "soft",
+   "planned": null,
+   "note": "kernel shims; the Cache/Hash/Storage facades compile (M23/M28/M30); the Gate facade compiles (M39a: the policy is compiled at build time); mail/queue/notification/password still unmapped → port"
+  },
+  {
+   "page": "filesystem",
+   "klass": "soft",
+   "planned": null,
+   "note": "wired (M28/M30): Storage:: → R2 when bound, else the D1 blob store (lw_blobs); the default disk compiles (Storage::disk('local') is that same store, M39b), a named disk needs a bucket of its own (LW002: R2 asks for a credit card); file_exists/public_path stay build-only (no local FS); the upload compiles (M40 part 5): the multipart body is parsed at the edge, the file object + store()/storeAs() answer Laravel's values (the file rule and the size rules in kilobytes work), the content type of a file (finfo) fails loud. Tiers: free plan first (D1 blob store, 1,5 MB/objek, tanpa kartu) → R2 kalau app butuh (disk bernama / objek besar; R2 minta kartu kredit) → paid plan hanya kalau free path memang tak cukup (keputusan operator; tak ada construct yang diblokir karena free plan kecil, build hanya berhenti kalau edge tak bisa menjawab seperti PHP)"
+  },
+  {
+   "page": "folio",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "NOT ported (0 code); Laravel Folio page routing unsupported"
+  },
+  {
+   "page": "fortify",
+   "klass": "soft",
+   "planned": "ph2",
+   "note": "compile routes/actions, or manual auth (padanan)"
+  },
+  {
+   "page": "frontend",
+   "klass": "fits",
+   "planned": null,
+   "note": "Vite unchanged; proven"
+  },
+  {
+   "page": "hashing",
+   "klass": "soft",
+   "planned": null,
+   "note": "PBKDF2 both-sides; bcrypt runs on free (bcryptjs, verdict safe); argon (N/A at edge); PHP 8.3 password_get_info parity + hashed cast"
+  },
+  {
+   "page": "head",
+   "klass": "soft",
+   "planned": "ph2",
+   "note": "metadata pkg; view-time render"
+  },
+  {
+   "page": "helpers",
+   "klass": "soft",
+   "planned": null,
+   "note": "kernel shim subset incl. html-entities, php-json, php-serialize, php-bytes (PHP strings as byte-strings: strlen/substr/ord semantics), php-json-ordered (the json_decode reader every PHP-facing decode uses, rt.json_decode, Collection::fromJson, a json cast, the request body: document key order via __lwOrder, exact 64-bit ints when a double carries the literal else LW006); abort_if/abort_unless/now/today compile (M33)"
+  },
+  {
+   "page": "homestead",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local VM"
+  },
+  {
+   "page": "horizon",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "Redis dashboard; padanan CF dashboard"
+  },
+  {
+   "page": "http-client",
+   "klass": "fits",
+   "planned": null,
+   "note": "fetch (already HTTP)"
+  },
+  {
+   "page": "http-tests",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local; parity harness covers"
+  },
+  {
+   "page": "images",
+   "klass": "hard",
+   "planned": null,
+   "note": "no GD/Imagick → CF Images or build-time"
+  },
+  {
+   "page": "installation",
+   "klass": "fits",
+   "planned": null,
+   "note": "toolchain (§7)"
+  },
+  {
+   "page": "license",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "meta"
+  },
+  {
+   "page": "lifecycle",
+   "klass": "fits",
+   "planned": null,
+   "note": "§3 execution model"
+  },
+  {
+   "page": "localization",
+   "klass": "soft",
+   "planned": null,
+   "note": "frozen JSON; pluralization subset; the compiled rung answers the dates in UTC (the Workers' timezone) while Laravel uses config('app.timezone'), an app with a non-UTC timezone gets different dates at the edge (a documented divergence; the plan: M57)"
+  },
+  {
+   "page": "logging",
+   "klass": "soft",
+   "planned": null,
+   "note": "the Log:: facade compiles (M33) → the platform log (the Workers console); no Log module (a local file sink)"
+  },
+  {
+   "page": "mail",
+   "klass": "soft",
+   "planned": null,
+   "note": "wired (M28): the worker builds the mailer from the app config (mail.default -> log/noop/resend) and hands it to the handler; the fluent Mail::to()->send() compiles (M57: the mailable is a class, the build compiles it and the kernel's Mailable base carries Laravel's fluent surface) → port; padanan = HTTP provider (SMTP impossible, hard)"
+  },
+  {
+   "page": "mcp",
+   "klass": "soft",
+   "planned": "ph3",
+   "note": "HTTP/SSE servers compile; stdio (N/A at edge) (padanan)"
+  },
+  {
+   "page": "middleware",
+   "klass": "soft",
+   "planned": null,
+   "note": "compiled pipeline wired (throttle + guest/auth stages); aliases auth.session/precognitive/can* fail loud"
+  },
+  {
+   "page": "migrations",
+   "klass": "fits",
+   "planned": null,
+   "note": "ops-time; remote via wrangler/SQL"
+  },
+  {
+   "page": "mix",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "legacy; Vite is the path"
+  },
+  {
+   "page": "mocking",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local; harness mocks fetch"
+  },
+  {
+   "page": "mongodb",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "D1 = SQLite only; explicit out-of-scope"
+  },
+  {
+   "page": "notifications",
+   "klass": "soft",
+   "planned": null,
+   "note": "no module; needs mail+queue+sse padanan (mail/db channels; broadcast → SSE)"
+  },
+  {
+   "page": "octane",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "server runner irrelevant at edge"
+  },
+  {
+   "page": "packages",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "meta (this repo becomes one)"
+  },
+  {
+   "page": "pagination",
+   "klass": "fits",
+   "planned": null,
+   "note": "kernel paginator"
+  },
+  {
+   "page": "passport",
+   "klass": "soft",
+   "planned": "ph3",
+   "note": "OAuth endpoints compile; JWT WebCrypto (padanan)"
+  },
+  {
+   "page": "passwords",
+   "klass": "soft",
+   "planned": null,
+   "note": "tokens + mail; signed URLs (signed URLs ok; token+mail wiring pending)"
+  },
+  {
+   "page": "pennant",
+   "klass": "soft",
+   "planned": null,
+   "note": "D1/KV store driver (padanan)"
+  },
+  {
+   "page": "pint",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local style tool"
+  },
+  {
+   "page": "precognition",
+   "klass": "soft",
+   "planned": "ph2",
+   "note": "validation kernel + headers"
+  },
+  {
+   "page": "processes",
+   "klass": "hard",
+   "planned": null,
+   "note": "no process spawning → off-edge padanan"
+  },
+  {
+   "page": "prompts",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "CLI-only"
+  },
+  {
+   "page": "providers",
+   "klass": "soft",
+   "planned": null,
+   "note": "compile-time registration subset"
+  },
+  {
+   "page": "pulse",
+   "klass": "soft",
+   "planned": "ph3",
+   "note": "D1-backed; or CF analytics padanan"
+  },
+  {
+   "page": "queries",
+   "klass": "soft",
+   "planned": null,
+   "note": "builder: where/or/join/group/having/distinct"
+  },
+  {
+   "page": "queues",
+   "klass": "soft",
+   "planned": null,
+   "note": "wired (M28): the worker hands the queue adapter to the handler (a port can push); the Queue::push(SomeJob::class) facade fails loud, the job would never run at the edge: the worker has no queue handler, so nothing consumes the queue binding, and the binding carries a JSON body, not a PHP job (the runtime throws the same). The paths that work: a Cloudflare Queues binding with a consumer you write (a limited version is on the Workers free plan; the paid plan charges per operation), or a D1 table the cron trigger reads (a port handler writes the row, the edge has no producer for it). The job class is not compiled either → port; CF Queues (a limited version on the Workers free plan; the paid plan charges per operation) / D1 queue padanan"
+  },
+  {
+   "page": "rate-limiting",
+   "klass": "soft",
+   "planned": null,
+   "note": "D1 counters (KV driver pending); throttle build-gated"
+  },
+  {
+   "page": "readme",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "meta"
+  },
+  {
+   "page": "redis",
+   "klass": "hard",
+   "planned": null,
+   "note": "KV/D1 drivers; Upstash REST optional"
+  },
+  {
+   "page": "releases",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "meta; pin 13.x policy"
+  },
+  {
+   "page": "requests",
+   "klass": "soft",
+   "planned": null,
+   "note": "kernel request subset"
+  },
+  {
+   "page": "responses",
+   "klass": "soft",
+   "planned": null,
+   "note": "kernel responses + SSE"
+  },
+  {
+   "page": "reverb",
+   "klass": "hard",
+   "planned": null,
+   "note": "WS server → DO/external/SSE padanan"
+  },
+  {
+   "page": "routing",
+   "klass": "fits",
+   "planned": null,
+   "note": "compiled router"
+  },
+  {
+   "page": "sail",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local Docker"
+  },
+  {
+   "page": "sanctum",
+   "klass": "soft",
+   "planned": "ph2",
+   "note": "tokens; SPA via sessions (padanan)"
+  },
+  {
+   "page": "scheduling",
+   "klass": "soft",
+   "planned": null,
+   "note": "wired (M29): the build dumps the app schedule into dist/src/schedule.generated.mjs + dist/cron.json (the Cloudflare trigger list); the worker's scheduled handler queues the due events for the app runtime (the edge triggers, it does not run artisan)"
+  },
+  {
+   "page": "scout",
+   "klass": "soft",
+   "planned": null,
+   "note": "engines via HTTP; D1 FTS fallback (padanan)"
+  },
+  {
+   "page": "search",
+   "klass": "soft",
+   "planned": null,
+   "note": "FTS5; vector → CF Vectorize padanan"
+  },
+  {
+   "page": "seeding",
+   "klass": "soft",
+   "planned": null,
+   "note": "local dev tooling; no runtime code (unverified)"
+  },
+  {
+   "page": "session",
+   "klass": "soft",
+   "planned": null,
+   "note": "D1 store; write budget soft; driver kv/encrypt pending"
+  },
+  {
+   "page": "socialite",
+   "klass": "soft",
+   "planned": "ph3",
+   "note": "fetch-based OAuth (padanan)"
+  },
+  {
+   "page": "starter-kits",
+   "klass": "soft",
+   "planned": "ph2",
+   "note": "kit = app code; covered with auth + blade (padanan)"
+  },
+  {
+   "page": "strings",
+   "klass": "soft",
+   "planned": null,
+   "note": "Str shim subset; fail loud"
+  },
+  {
+   "page": "structure",
+   "klass": "fits",
+   "planned": null,
+   "note": "§7 source of truth"
+  },
+  {
+   "page": "telescope",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local debugger"
+  },
+  {
+   "page": "testing",
+   "klass": "fits",
+   "planned": null,
+   "note": "local PHPUnit + edge parity harness"
+  },
+  {
+   "page": "upgrade",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "meta; upgrade = recompile + parity"
+  },
+  {
+   "page": "urls",
+   "klass": "fits",
+   "planned": null,
+   "note": "url/route/asset; signed URLs"
+  },
+  {
+   "page": "valet",
+   "klass": "not-applicable",
+   "planned": null,
+   "note": "local env"
+  },
+  {
+   "page": "validation",
+   "klass": "soft",
+   "planned": null,
+   "note": "the full rule surface (KNOWN_RULES + the conditional/presence sets); $request->validate() → redirect-back / 422 JSON (M19); unique/exists via D1; $attributes display names + wildcard custom messages (T10); a FormRequest compiles its rules()/messages()/attributes() and its prepareForValidation() hook (the compiled class extends the kernel's kernel/form-request.mjs, the request surface the hook uses); the timezone rule tests PHP's own identifier list (kernel/timezone-ids.data.mjs, generated by tools/timezone-ids.php; Intl's list is a different set); the messages are Laravel 13's own (kernel/validation-messages.mjs + the generated kernel/validation-messages.data.mjs, the app's published lang/ file wins, the build dumps it); a rule object (Rule::file()->max()) and a FormRequest that overrides prepareForValidation() fail loud (the compiled rung evaluates the string rules only); the rule parameters are parsed like Laravel (CSV - in:\"a\",\"b\" works, nothing is trimmed) (M61a)"
+  },
+  {
+   "page": "verification",
+   "klass": "soft",
+   "planned": null,
+   "note": "signed URLs + mail (signed URLs ok; mail wiring pending)"
+  },
+  {
+   "page": "views",
+   "klass": "soft",
+   "planned": null,
+   "note": "compiled view handlers (echo/if/concat subset)"
+  },
+  {
+   "page": "vite",
+   "klass": "fits",
+   "planned": null,
+   "note": "manifest shims; proven today"
+  }
+ ],
+ "features": [
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "Basic routes, params",
+   "edge": "Compiled router (pattern match)",
+   "klass": "fits",
+   "notes": "from route:list dump",
+   "plan": "F"
+  },
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "Named routes, route(), url()",
+   "edge": "Frozen name map",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "Route groups / middleware",
+   "edge": "Compiled pipeline",
+   "klass": "fits",
+   "notes": "handleHttp runs web group + auth/guest/throttle; 11-step oracle parity (M15)",
+   "plan": "F"
+  },
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "Redirects",
+   "edge": "Response redirect",
+   "klass": "fits",
+   "notes": "redirect()/->to/->route + ->intended() (M20, pulls url.intended); back() needs session",
+   "plan": "F"
+  },
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "Signed URLs",
+   "edge": "HMAC in kernel",
+   "klass": "fits",
+   "notes": "same key derivation",
+   "plan": "F"
+  },
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "Route model binding",
+   "edge": "Compiled lookup",
+   "klass": "soft",
+   "notes": "id-first subset initially",
+   "plan": "F"
+  },
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "Custom middleware",
+   "edge": "Compiled like controllers",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "Throttle middleware",
+   "edge": "Counter in D1/KV",
+   "klass": "fits",
+   "notes": "numeric throttle:n[,m] wired in handleHttp over the D1-backed database cache store (M18); named throttle:name needs its AppServiceProvider definition → build fails loud",
+   "plan": "F"
+  },
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "CSRF",
+   "edge": "Token in session store",
+   "klass": "fits",
+   "notes": "kernel PreventRequestForgery wired in handleHttp + end-to-end oracle parity (M15)",
+   "plan": "F"
+  },
+  {
+   "area": "A. Routing & HTTP",
+   "laravel": "Cookie encryption",
+   "edge": "Laravel Encrypter parity (AES-CBC + HMAC) via WebCrypto",
+   "klass": "fits",
+   "notes": "EncryptCookies wired in handleHttp; round-trip + prefix parity in cookies.test.mjs",
+   "plan": "F"
+  },
+  {
+   "area": "B. Views",
+   "laravel": "Echo, @if/@foreach/@include/@extends/@section...",
+   "edge": "Compiled JS render fns",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "B. Views",
+   "laravel": "@vite / @fonts",
+   "edge": "Runtime shim reading build manifest",
+   "klass": "fits",
+   "notes": "already proven in snapshots",
+   "plan": "F"
+  },
+  {
+   "area": "B. Views",
+   "laravel": "@php blocks",
+   "edge": "Restricted subset",
+   "klass": "soft",
+   "notes": "else build error (no silent)",
+   "plan": "F"
+  },
+  {
+   "area": "B. Views",
+   "laravel": "Blade components (x-..., slots)",
+   "edge": "Phase 2",
+   "klass": "soft",
+   "notes": "padanan now: inline partial",
+   "plan": "F"
+  },
+  {
+   "area": "B. Views",
+   "laravel": "Custom directives",
+   "edge": "Registered renderers",
+   "klass": "soft",
+   "notes": "later",
+   "plan": "F"
+  },
+  {
+   "area": "C. App code",
+   "laravel": "Controllers / closures",
+   "edge": "PHP-subset → JS",
+   "klass": "fits",
+   "notes": "multi-verb controllers compiled (GET/POST/PUT/PATCH/DELETE, one handler per verb): scalar params + Request $request injection, model chains + views, session()/old()/csrf_token()/csrf_field()/request()/cookie()/auth()/Auth::, response()/response()->json(), Cache::/Hash::* facades, class constants (RouteServiceProvider::HOME, dumped at build time), Eloquent writes (create/fill/save/delete, $model->attr = ...); fail loud elsewhere",
+   "plan": "F"
+  },
+  {
+   "area": "C. App code",
+   "laravel": "Service classes / helpers",
+   "edge": "PHP-subset → JS",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "C. App code",
+   "laravel": "Form Requests",
+   "edge": "Compile rules + authorize",
+   "klass": "fits",
+   "notes": "rules()/messages()/attributes() are dumped at build time (tools/formrequest-dump.php) and compiled into the handler: the request is validated before the method body (like the container resolving the FormRequest), and validated() returns the ruled attributes. authorize() must return true, prepareForValidation() is not supported → build fails loud. A class-typed parameter that is not a FormRequest is a service → build fails loud",
+   "plan": "F"
+  },
+  {
+   "area": "C. App code",
+   "laravel": "Validation",
+   "edge": "Rule subset in kernel; unique/exists via D1",
+   "klass": "soft",
+   "notes": "$request->validate()/validateWithBag() compile to an awaited kernel-validator call; a failure renders like Laravel, 302 back (Referer → previous URL → /) with flashed errors + _old_input (minus dontFlash), or 422 JSON for expectsJson. $attributes display names (exact/wildcard/PHP-truthiness/raw-implicit/Str::snake fallback) and :attribute custom-message replacement are wired; json session serialization only (the ViewErrorBag php-serialization path fails loud) (M19/T10). A date-comparison parameter (before/after/date_equals) reads Carbon's relative grammar, weekday, month name, noon/3pm, +3 days/2 weeks ago, next week, first day of january, verified 0/405 divergent vs PHP 8.3 (audit #671)",
+   "plan": "F"
+  },
+  {
+   "area": "C. App code",
+   "laravel": "Events / Listeners",
+   "edge": "Synchronous compiled",
+   "klass": "fits",
+   "notes": "queued listeners → queue",
+   "plan": "F"
+  },
+  {
+   "area": "C. App code",
+   "laravel": "Exceptions / error pages",
+   "edge": "Kernel map → static error pages",
+   "klass": "soft",
+   "notes": "resources/views/errors/{code}.blade.php compile at build time and render for abort()/HTTP errors and for an unhandled exception (500; its expectsJson answer is Laravel's {\"message\":\"Server Error\"}) when present; otherwise status-only stubs",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Migrations",
+   "edge": "PHP-side, applied to remote D1 (SQL export / wrangler)",
+   "klass": "fits",
+   "notes": "ops-time, not request-time",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Seeders / factories",
+   "edge": "Local + SQL import",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Eloquent CRUD",
+   "edge": "Generated model metadata + D1",
+   "klass": "soft",
+   "notes": "subset: find/findOrFail/all/where/whereIn/orderBy/limit + writes (create, fill, save, delete, forceDelete, restore, $model->attr = …); the write path needs the D1 binding (rt.db())",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Relationships",
+   "edge": "includes / eager subset",
+   "klass": "soft",
+   "notes": "belongsTo, hasMany first",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Casts / accessors",
+   "edge": "Compiled",
+   "klass": "soft",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Query builder subset",
+   "edge": "Kernel builder → SQL",
+   "klass": "soft",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Raw SQL",
+   "edge": "Pass-through to D1",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Transactions",
+   "edge": "D1 atomic batch()",
+   "klass": "soft",
+   "notes": "interactive tx unsupported (platform) → padanan: single-request batch",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Pagination",
+   "edge": "Length-aware paginator",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "D. Data",
+   "laravel": "Search",
+   "edge": "D1 (SQL LIKE / FTS5); vector → CF Vectorize padanan",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "E. State & security",
+   "laravel": "Sessions",
+   "edge": "D1-backed store + encrypted cookie",
+   "klass": "fits",
+   "notes": "kernel Store + cookie/D1 handlers, oracle byte-parity (M11); wired in handleHttp, payload bytes compared per step (M15); regenerate()/invalidate()/regenerateToken() wired from compiled controllers (M20)",
+   "plan": "F"
+  },
+  {
+   "area": "E. State & security",
+   "laravel": "Auth (guard, login/logout, remember)",
+   "edge": "Kernel + D1 users",
+   "klass": "fits",
+   "notes": "kernel SessionGuard, EloquentUserProvider, BcryptHasher, auth/guest middleware oracle-verified (M14); wired in the compiled pipeline + end-to-end parity (M15); the auth.basic middleware is honoured (Basic header → guard->attempt(), 401 + WWW-Authenticate: Basic realm=\"Basic\" on failure); a guard driver the app registers ITSELF (Auth::extend('seal', fn), a closure the rung cannot run) is answered by the app's own JS through a guard port (registry.json guards → ports/<slug>.mjs → PortedGuard, kernel/auth.mjs): the driver is the app's, the middleware/auth()->user()/401 answer around it stay compiled, user() runs at most once per guard per request, and a ported method the port does not export fails loud. An UNPORTED non-session driver refuses the build (it would otherwise answer for an unauthenticated request)",
+   "plan": "F"
+  },
+  {
+   "area": "E. State & security",
+   "laravel": "Password hashing",
+   "edge": "bcrypt via bcryptjs ($2y$ parity)",
+   "klass": "fits",
+   "notes": "kernel BcryptHasher make/check/needsRehash/verifyConfiguration (M5); free-plan CPU banked (measured); the Hash facade compiles to it (Hash::make/check/needsRehash/isHashed) with the app's hashing.bcrypt.rounds",
+   "plan": "F"
+  },
+  {
+   "area": "E. State & security",
+   "laravel": "Rate limiting",
+   "edge": "D1 counters (cache table)",
+   "klass": "fits",
+   "notes": "kernel RateLimiter + ThrottleRequests oracle-verified (M12); runs on the D1 database cache store (M18). increment is read-then-write, D1 has no interactive transactions",
+   "plan": "F"
+  },
+  {
+   "area": "F. Platform services",
+   "laravel": "Mail",
+   "edge": "HTTP providers (Resend etc.) via fetch",
+   "klass": "soft",
+   "notes": "kernel/mail.mjs exists (log/noop/resend); wired (M28), the worker builds the mailer from the app config (mail.default → log/noop/resend) and hands it to the handler; the fluent Mail::to()->send() compiles (M57: a mailable is a class - the build compiles it and the kernel's Mailable base carries Laravel's fluent surface; the mailer sends the recipients, the subject and the rendered view) → the methods the kernel mailer does not implement (raw, html, queue, later) fail loud (padanan = HTTP provider; SMTP impossible, hard)",
+   "plan": "F"
+  },
+  {
+   "area": "F. Platform services",
+   "laravel": "Queues / Jobs",
+   "edge": "Cloudflare Queues (a limited version on the Workers free plan; the paid plan charges per operation - 10,000 operations/day included on the free plan) or D1 queue",
+   "klass": "soft",
+   "notes": "wired (M28), the worker hands the queue adapter to the handler (a port can push); the Queue::push(SomeJob::class) facade fails loud, the job would never run at the edge: the worker has no queue handler, so nothing consumes the queue binding, and the binding carries a JSON body, not a PHP job (the runtime throws the same). A compiled job class is the supported form: Job::dispatch() writes the D1 lw_jobs row and the cron trigger drains it (M63), so the job runs after the response; the build refuses the push without a cron trigger, and refuses a push whose job class did not compile (the drain has no handler for it). The job classes compile (M63) → port",
+   "plan": "F"
+  },
+  {
+   "area": "F. Platform services",
+   "laravel": "Scheduler",
+   "edge": "Cron Triggers → one dispatcher reads schedule",
+   "klass": "soft",
+   "notes": "wired (M29): the build dumps the app schedule (cron expression + command) into dist/src/schedule.generated.mjs + dist/cron.json (the Cloudflare trigger list); the worker's scheduled handler queues the due events for the app runtime (the edge triggers, it does not run artisan), delivery needs the app's QUEUE producer binding (without it the event is dropped and the worker, the /__lw/cron answer and the build all say so); the trigger also drains the D1 job queue, which needs no binding. The HTTP face of the trigger (POST /__lw/cron) is closed by default: without LW_CRON_SECRET it answers 404 (indistinguishable from a missing route), with a secret the caller must present it in X-LW-Cron",
+   "plan": "F"
+  },
+  {
+   "area": "F. Platform services",
+   "laravel": "Cache",
+   "edge": "D1 database store (Laravel parity) + KV cache-aside",
+   "klass": "fits",
+   "notes": "DatabaseCacheStore mirrors Illuminate\\Cache\\DatabaseStore 13.37, oracle-verified incl. raw rows (M18); KV stays for build-time/simple caching (eventual consistency trade); the Cache facade compiles to it (get/has/put/add/forever/forget/remember/pull/increment/decrement/touch/flush)",
+   "plan": "F"
+  },
+  {
+   "area": "F. Platform services",
+   "laravel": "Storage / filesystem",
+   "edge": "Uploads → R2 or the D1 blob store; file_exists/public_path → build-time snapshot",
+   "klass": "soft",
+   "notes": "no local FS (hard) → object storage is the padanan; wired (M28): the Storage:: facade compiles to the store (put/get/exists/delete) and the worker hands the adapter to the handler; M30: R2 when the app binds it, else the D1 blob store (one row per object in lw_blobs, no extra Cloudflare product, no card); with neither binding the build fails loud and names the missing one (no silent in-memory writes). Shadow-verified: the compiled side writes to the D1 blob store and reads it back byte-identically to the real app on the local disk. M40 part 5: the upload compiles, the multipart body is parsed at the edge, $request->file() answers Laravel's file object, $file->store()/storeAs() write to the app's default disk (the same store) and answer the disk-relative path; the file rule and the size rules (in kilobytes) work; the content type of a file (finfo) fails loud",
+   "plan": "F"
+  },
+  {
+   "area": "F. Platform services",
+   "laravel": "HTTP client",
+   "edge": "fetch",
+   "klass": "fits",
+   "notes": "no raw sockets (hard); 6 concurrent conns → batch/queue",
+   "plan": "F"
+  },
+  {
+   "area": "F. Platform services",
+   "laravel": "Logging",
+   "edge": "Console + optional external sink via fetch",
+   "klass": "soft",
+   "notes": "no Log module; Log:: facade not mapped → port; console + fetch sinks only",
+   "plan": "F"
+  },
+  {
+   "area": "F. Platform services",
+   "laravel": "Realtime / WebSockets",
+   "edge": "Polling / SSE; Durable Objects beyond",
+   "klass": "hard",
+   "notes": "wall: no long-lived conn → padanan: polling/SSE first",
+   "plan": "F* / $"
+  },
+  {
+   "area": "F. Platform services",
+   "laravel": "i18n",
+   "edge": "Lang frozen to JSON; pluralization subset",
+   "klass": "soft",
+   "notes": "Lang frozen to JSON; pluralization subset (see localization)",
+   "plan": "F"
+  },
+  {
+   "area": "G. Frontend / DX",
+   "laravel": "Vite build",
+   "edge": "Unchanged",
+   "klass": "fits",
+   "notes": "already working",
+   "plan": "F"
+  },
+  {
+   "area": "G. Frontend / DX",
+   "laravel": "Artisan",
+   "edge": "Local only; edge CLI (build/ship)",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "G. Frontend / DX",
+   "laravel": "PHPUnit",
+   "edge": "Local unchanged; parity suite added",
+   "klass": "fits",
+   "notes": "",
+   "plan": "F"
+  },
+  {
+   "area": "G. Frontend / DX",
+   "laravel": "Livewire / Inertia / Filament",
+   "edge": "Out of v1; Inertia feasible (JSON port) phase 3; Livewire hard",
+   "klass": "hard",
+   "notes": "documented, not promised",
+   "plan": "later"
+  },
+  {
+   "area": "G. Frontend / DX",
+   "laravel": "Telescope / Horizon / Debugbar",
+   "edge": "Local-only tools",
+   "klass": "not-applicable",
+   "notes": "N/A at edge",
+   "plan": "F"
+  }
+ ],
+ "supported": [
+  {
+   "area": "Blade",
+   "what": "@extends/@section/@yield, @if/@elseif/@else, @foreach/@for/@while, @switch/@match, ternary / ?: / ?? / ??=, isset/empty, string interpolation, e(), __() translations (dumped at build), PHP casts",
+   "proof": "the Blade corpus + the PHP 8.3 oracle"
+  },
+  {
+   "area": "Router",
+   "what": "{param} / {param?} / {param*}, domain rules, X-HTTP-Method-Override, automatic OPTIONS",
+   "proof": "kernel/tests/router.test.mjs"
+  },
+  {
+   "area": "Controllers",
+   "what": "GET/POST/PUT/PATCH/DELETE with resolvable class methods; Request/FormRequest injection; session()/old()/csrf_token()/csrf_field(); auth()/Auth::*; $request->validate()/validateWithBag(); response()/response()->json(); Cache/Hash facades; class constants; redirect()->intended() + session rotation; Eloquent writes (create/fill/save/delete/$model->attr = …)",
+   "proof": "PHP 8.3 oracle (M15)"
+  },
+  {
+   "area": "Eloquent",
+   "what": "find/findOrFail/all/where/orderBy/limit + first/get/count/pluck/value; hasMany/hasOne/belongsTo; create/updateOrCreate/firstOrCreate; fillable + mutators + casts (json, decimal:N, hashed); refresh/increment; soft deletes; relations read as properties",
+   "proof": "kernel/tests/db.test.mjs + SQLite integration"
+  },
+  {
+   "area": "Auth",
+   "what": "SessionGuard (attempt/login/logout/remember/recaller), EloquentUserProvider, BcryptHasher ($2y$ parity), remember-me rotation, auth/guest middleware, auth.basic; a guard driver the app registers itself (Auth::extend) is answered by the app's own JS (registry.json guards → ports/<slug>.mjs) while the middleware / auth()->user() / 401 answer around it stay compiled",
+   "proof": "13 guard runs byte-parity vs PHP 8.3 oracle (M14)"
+  },
+  {
+   "area": "Session + CSRF",
+   "what": "Flash data + rotation, migrate/regenerate/invalidate, token plumbing, PreventRequestForgery",
+   "proof": "PHP 8.3 oracle (M11/M13)"
+  },
+  {
+   "area": "Rate limiting",
+   "what": "ThrottleRequests over the D1-backed database cache store",
+   "proof": "PHP 8.3 oracle (M12/M18)"
+  },
+  {
+   "area": "Validation",
+   "what": "the full rule surface (KNOWN_RULES + the conditional/presence sets, measured, not typed) incl. unique/exists via D1, pipe-safe regex, nullable/sometimes/bail, wildcard display names, Laravel 13 messages",
+   "proof": "kernel/tests/validator.test.mjs + validation-messages.test.mjs"
+  },
+  {
+   "area": "D1 query builder",
+   "what": "where*/where(fn), join/group/having/distinct, whereDate/whereYear/whereMonth/whereDay/whereTime, sum/avg/min/max, upsert/insertGetId/truncate/increment/updateOrInsert/chunk, D1-safe param binding (bool→1/0, Date→ISO, undefined→NULL)",
+   "proof": "kernel/tests/sqlite-integration.test.mjs"
+  },
+  {
+   "area": "Cache",
+   "what": "DatabaseCacheStore (D1-backed database cache), KV cache-aside, Cache façade (get/put/add/remember/increment/decrement/…), forget/flush",
+   "proof": "PHP 8.3 oracle (M18)"
+  },
+  {
+   "area": "Storage",
+   "what": "Storage::put()/get()/exists()/delete() and Storage::disk('<default>') → D1 blob store (no card) or R2 (when bound); uploads $file->store()",
+   "proof": "M30/M39b/M40-part5"
+  },
+  {
+   "area": "File upload",
+   "what": "multipart parsed at the edge, $request->file() answers the file object, the file rule, size rules in KB",
+   "proof": "M40-part5"
+  },
+  {
+   "area": "Gate / policy",
+   "what": "Gate::allows()/denies(), the policy compiled at build time (tools/policy-dump.php → dist/src/policies.generated.mjs), the before() hook honoured",
+   "proof": "M39a"
+  },
+  {
+   "area": "Event dispatch",
+   "what": "Event::dispatch(new X()), listeners compiled, run synchronously, every listener, false stops, the array answer",
+   "proof": "M39c/M47/M53"
+  },
+  {
+   "area": "Paginator",
+   "what": "paginate(10) → LengthAwarePaginator (items/total/pages/URL window); $paginator->links() renders pagination::tailwind byte-identical to Laravel",
+   "proof": "M40"
+  },
+  {
+   "area": "Mail",
+   "what": "Mail::to()->send() compiles the mailable class; mailer built from mail.default → log/noop/resend",
+   "proof": "M28/M57"
+  },
+  {
+   "area": "Queue",
+   "what": "Scheduler",
+   "proof": "Queue::push() fails loud (worker has no queue consumer); the schedule dumps to dist/cron.json + schedule.generated.mjs, the scheduled handler evaluates due events"
+  },
+  {
+   "area": "Method handling",
+   "what": "auto OPTIONS (200, Allow header); unmatched method → 405 (Allow + the app's errors/405 view, else the framework's page; JSON gets Laravel's message)",
+   "proof": "M40"
+  },
+  {
+   "area": "Route-model binding",
+   "what": "show(Post $post), model from the route segment, 404 on miss",
+   "proof": "M40"
+  }
+ ],
+ "failsLoud": [
+  {
+   "construct": "Blade <x-…> components",
+   "why": "compile to $__env->…, only the layouts compile",
+   "escape": "hand-written ports/*.mjs"
+  },
+  {
+   "construct": "Controller code outside the subset",
+   "why": "transpiler fails the build (LW001 to LW004)",
+   "escape": "a ports/ handler"
+  },
+  {
+   "construct": "Queue::push(SomeJob::class)",
+   "why": "the job would never run at the edge, no queue handler, the binding carries JSON not a PHP job",
+   "escape": "CF Queues binding + a consumer you write; or a D1 table a cron reads"
+  },
+  {
+   "construct": "named Storage::disk('x')",
+   "why": "needs its own bucket; R2 asks for a credit card",
+   "escape": "bind R2 explicitly, or use the default disk"
+  },
+  {
+   "construct": "Cache::tags()",
+   "why": "the D1 database store has no tags",
+   "escape": "drop tags"
+  },
+  {
+   "construct": "CORS config",
+   "why": "the Access-Control-* headers would be missing",
+   "escape": "declare the routes in registry.json ignore"
+  },
+  {
+   "construct": "the compiled code reads an app config group (config('needs.categories'))",
+   "why": "the runtime config dump carries the framework keys plus the groups the app declares; without a declaration the edge would answer null where PHP answers the value, and the build refuses the config('<key>') it cannot answer",
+   "escape": "registry.json → {\"config\": [\"needs\"]}, the group tree lands in dist/src/config.generated.mjs; declare only public data (an app's config/ may hold credentials, a guard port reads those as bindings)"
+  },
+  {
+   "construct": "a non-session auth.guards.* driver the app registers itself (Auth::extend)",
+   "why": "the registering closure is PHP the rung cannot run, and answering \"no user\" for every request would let a guarded route through",
+   "escape": "registry.json → {\"guards\": {\"<driver>\": \"<slug>\"}} + ports/<slug>.mjs exporting default { async user(ctx) { ... } }, where ctx is { request, guard, driver, config, app: { config, db, models, env, session, cookieJar } }, the app's bindings are ctx.app.env / ctx.app.db / ctx.app.models, never ctx.env; the working recipe is on the auth row below"
+  }
+ ],
+ "playbook": {
+  "published": false,
+  "source": "notes/PLAYBOOK.local.md",
+  "note": "working-tree note, not in the repository: only its shape is republished here",
+  "counts": {
+   "justified": 7,
+   "ledger": 15,
+   "corrections": 7,
+   "fixes": 26
+  },
+  "statuses": {
+   "OPEN": 13,
+   "DONE": 2
+  },
+  "areas": {
+   "tes": 2,
+   "housekeeping": 1,
+   "CI": 2,
+   "docs gate": 1,
+   "docs": 1,
+   "DX": 1,
+   "klaim": 1,
+   "duplikasi": 2,
+   "instrumen": 1,
+   "proses audit": 1,
+   "bug P2": 1,
+   "tooling P3": 1
+  },
+  "citing": 6,
+  "rows": [
+   {
+    "id": "S1",
+    "area": "tes",
+    "status": "OPEN"
+   },
+   {
+    "id": "S2",
+    "area": "tes",
+    "status": "OPEN"
+   },
+   {
+    "id": "S3",
+    "area": "housekeeping",
+    "status": "OPEN"
+   },
+   {
+    "id": "S4",
+    "area": "CI",
+    "status": "OPEN"
+   },
+   {
+    "id": "S5",
+    "area": "CI",
+    "status": "OPEN"
+   },
+   {
+    "id": "S6",
+    "area": "docs gate",
+    "status": "OPEN"
+   },
+   {
+    "id": "S7",
+    "area": "docs",
+    "status": "OPEN"
+   },
+   {
+    "id": "S8",
+    "area": "DX",
+    "status": "OPEN"
+   },
+   {
+    "id": "S9",
+    "area": "klaim",
+    "status": "OPEN"
+   },
+   {
+    "id": "S10",
+    "area": "duplikasi",
+    "status": "OPEN"
+   },
+   {
+    "id": "S11",
+    "area": "duplikasi",
+    "status": "OPEN"
+   },
+   {
+    "id": "S12",
+    "area": "instrumen",
+    "status": "OPEN"
+   },
+   {
+    "id": "S13",
+    "area": "proses audit",
+    "status": "OPEN"
+   },
+   {
+    "id": "S14",
+    "area": "bug P2",
+    "status": "DONE"
+   },
+   {
+    "id": "S15",
+    "area": "tooling P3",
+    "status": "DONE"
+   }
+  ],
+  "corrections": {
+   "total": 7,
+   "rulings": {
+    "SALAH": 3,
+    "TERTOLAK": 1,
+    "TERTUTUP": 1,
+    "KOREKSI": 1,
+    "SEBAGIAN": 1
+   }
+  },
+  "severity": {
+   "P1": 10,
+   "P2": 72,
+   "P3": 224,
+   "INFO": 93
+  }
+ },
+ "checks": [
+  {
+   "name": "tools/constructs.json tallies with the README counter block",
+   "ok": true,
+   "detail": "constructs.json 47/64/7 of 118, README {\"compiles\":47,\"failsLoud\":64,\"documented\":7,\"audited\":118}"
+  },
+  {
+   "name": "the generated audit table in COMPILED.md carries every construct",
+   "ok": true,
+   "detail": "audit rows 118, constructs.json rows 118"
+  },
+  {
+   "name": "the audit table verdict tallies with tools/constructs.json",
+   "ok": true,
+   "detail": "audit table \"compiles\" 47, constructs.json 47"
+  },
+  {
+   "name": "the facade census is complete (classified === declared total)",
+   "ok": true,
+   "detail": "47 of 47"
+  },
+  {
+   "name": "the MAP coverage index has no blank verdict",
+   "ok": true,
+   "detail": "105 rows, 0 blank"
+  },
+  {
+   "name": "the README docs counter matches the MAP coverage index row count",
+   "ok": true,
+   "detail": "README {\"withVerdict\":105,\"pages\":105}, MAP rows 105"
+  },
+  {
+   "name": "the ledger status tally covers every ledger row",
+   "ok": true,
+   "detail": "ledger 15 rows, statuses {\"OPEN\":13,\"DONE\":2}"
+  },
+  {
+   "name": "the feature map yields at least one row per area",
+   "ok": true,
+   "detail": "49 rows across 7 areas"
+  }
+ ]
+}

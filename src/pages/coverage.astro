@@ -1,0 +1,190 @@
+---
+import Base from '../layouts/Base.astro';
+import Census from '../components/Census.astro';
+import Stat from '../components/Stat.astro';
+import { number, headline, docsPages, features, playbook } from '../lib/report.js';
+
+const order = ['fits', 'soft', 'hard', 'not-applicable'];
+// The census palette has three verdicts; the coverage index has four classes.
+// `soft` is the stronger colour (green, a documented trade), and the two weaker
+// ones keep their own grey so a wall is never mistaken for a non-applicable page.
+const DTAG = { fits: 'compiles', soft: 'documented', hard: 'fails-loud', 'not-applicable': 'unknown' };
+const plainPage = (page) => page.replace(/`/g, '');
+const classes = Object.fromEntries(order.map((klass) => [klass, docsPages.filter((row) => row.klass === klass).length]));
+const grouped = order.map((klass) => ({ klass, rows: docsPages.filter((row) => row.klass === klass) }));
+
+const measured = [
+  { what: 'page-like kernel load', p50: '5 ms', p95: '41 ms', max: '62 ms', note: '5 hot paths × 50 iterations, 200 requests / 4 connections' },
+  { what: 'bcryptjs cost 10 (login path)', p50: '93 to 104 ms', p95: 'not measured', max: 'not measured', note: 'kept off every per-page path; native PBKDF2 of at most 100k iterations = 22 ms fallback' },
+  { what: 'burn control (must be caught)', p50: 'about 2020 ms', p95: 'n/a', max: 'killed', note: 'Free plan kills a single over-budget request at cpu=2020 ms, 1102 exceededCpu' },
+];
+---
+
+<Base
+  title="Coverage, in the laravel-workers report"
+  description="The 105 Laravel documentation pages with the verdict the project gives each one, plus what was measured against the Free-plan CPU budget."
+>
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">coverage</p>
+        <h1>{number(headline.docs.pages)} documentation pages, {number(headline.docs.blank)} blanks</h1>
+      </div>
+      <p>
+        The coverage index in `MAP.md` section C gives every Laravel documentation page a verdict.
+        A blank verdict is a build failure, so the set below is exhaustive by construction.
+      </p>
+    </div>
+
+    <div class="stats">
+      <Stat count={classes.fits} label="fits as-is" verdict="compiles" />
+      <Stat count={classes.soft} label="fits with a documented trade" verdict="documented" />
+      <Stat count={classes.hard} label="platform wall" verdict="fails-loud" />
+      <Stat count={classes['not-applicable']} label="not applicable at the edge" />
+    </div>
+
+    <Census
+      constructs={docsPages.map((row, i) => ({
+        id: `p${i}`,
+        label: plainPage(row.page),
+        verdict: DTAG[row.klass] ?? 'unknown',
+        batch: row.planned ?? undefined,
+        note: row.note,
+      }))}
+      title="Coverage cells"
+      restLabel="not applicable"
+      caption="One cell per documentation page, coloured by the four-way class in MAP.md section C, with the census palette plus grey for pages that are not applicable."
+    />
+
+    <div class="cols cols--split" style="margin-top:2rem">
+      {grouped.map(({ klass, rows }) => (
+        rows.length > 0 && (
+          <div class="panel">
+            <h3>{klass.replace('-', ' ')} <span class="muted mono">{number(rows.length)}</span></h3>
+            <ul class="small muted">
+              {rows.slice(0, 14).map((row) => (
+                <li><span class="mono">{row.page}</span>{row.note ? `, ${row.note}` : ''}</li>
+              ))}
+            </ul>
+            {rows.length > 14 && <p class="small muted">… {number(rows.length - 14)} more, all in the same class.</p>}
+          </div>
+        )
+      ))}
+    </div>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">measured, not assumed</p>
+        <h2>What the CPU budget actually did</h2>
+      </div>
+      <p>
+        The repository's `tools/cpu-gate.mjs` deploys a probe worker and reads the platform's own
+        `cpuTime` and `outcome` back through `wrangler tail`. The numbers below are copied from
+        `COMPILED.md`, which records the run date and the probe worker's name.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption>Free plan: 10 ms CPU per invocation as documented; enforcement measured softer than the docs (a per-isolate rollover bank).</caption>
+        <thead>
+          <tr>
+            <th scope="col">load</th>
+            <th scope="col">p50</th>
+            <th scope="col">p95</th>
+            <th scope="col">max / kill</th>
+            <th scope="col">what it is</th>
+          </tr>
+        </thead>
+        <tbody>
+          {measured.map((row) => (
+            <tr>
+              <th scope="row">{row.what}</th>
+              <td class="mono">{row.p50}</td>
+              <td class="mono">{row.p95}</td>
+              <td class="mono">{row.max}</td>
+              <td class="small muted">{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="notice" style="margin-top:1rem">
+      The p50 fits the 10 ms budget; the p95 tail is four times over it. The project states this
+      itself and treats the tail as a design smell, not as headroom to spend.
+    </p>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">feature map</p>
+        <h2>{number(features.length)} rows, {number(new Set(features.map((f) => f.area)).size)} areas</h2>
+      </div>
+      <p>
+        `MAP.md` section 5, one row per Laravel capability: what it maps to on the edge, whether it
+        fits, and the plan letter that carries it.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption>Class per row comes from the row's own marker: fits, documented trade (`soft`), or platform wall (`hard`).</caption>
+        <thead>
+          <tr>
+            <th scope="col">area</th>
+            <th scope="col">Laravel</th>
+            <th scope="col">edge equivalent</th>
+            <th scope="col">class</th>
+            <th scope="col">plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          {features.map((row) => (
+            <tr>
+              <th scope="row" class="small">{row.area.replace(/\*\*/g, '')}</th>
+              <td class="small">{row.laravel}</td>
+              <td class="small">{row.edge}</td>
+              <td class="cell-verdict" data-klass={row.klass}>
+                <span class="dot" data-klass={row.klass}></span>{row.klass}
+              </td>
+              <td class="mono">{row.plan}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">provenance</p>
+        <h2>Where each figure comes from</h2>
+      </div>
+      <p>
+        Nothing on this site is typed by hand: `scripts/extract-lw.mjs` reads the repository and
+        `scripts/verify-lw.mjs` fails when a figure drifts from the file it was read out of.
+      </p>
+    </div>
+
+    <ul class="list">
+      {[
+        { figure: `${number(headline.constructs.audited)} constructs, ${number(headline.constructs.compiles)} compiling`, source: 'tools/constructs.json', cross: 'README.md counter block, COMPILED.md audit table' },
+        { figure: `${number(headline.facades.classified)} of ${number(headline.facades.total)} facades classified`, source: 'the vendored Illuminate/Support/Facades directory (Laravel 13)', cross: 'the facade census completeness check' },
+        { figure: `${number(headline.corpus.identical)}/${number(headline.corpus.cases)} Blade cases byte-identical`, source: 'the recorded oracle run against PHP 8.3.30', cross: 'declared counter block in README.md' },
+        { figure: `${number(headline.docs.pages)} docs pages with a verdict`, source: 'MAP.md section C', cross: 'README.md docs counter' },
+        { figure: `${number(features.length)} feature-map rows`, source: 'MAP.md section 5', cross: 'no independent counter: the row count is the figure' },
+        { figure: `${number(playbook.counts.ledger)} ledger rows, ${number(playbook.counts.corrections)} corrections`, source: 'notes/PLAYBOOK.local.md (working-tree note, not in the repository)', cross: `status tally covers all ${number(playbook.counts.ledger)} rows` },
+      ].map((row) => (
+        <li>
+          <div class="list__head"><span class="list__title">{row.figure}</span></div>
+          <p class="small muted">read from <code>{row.source}</code>; checked against {row.cross}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+</Base>

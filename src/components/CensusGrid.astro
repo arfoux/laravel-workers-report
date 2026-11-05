@@ -1,0 +1,140 @@
+---
+// The interactive census: one cell per audited construct, rebuilt from
+// src/data/report.json at build time (never hand-written markup).
+//
+// Interaction is progressive: the server already rendered the full grid, and the
+// script below only adds filtering and the detail readout. With JavaScript off,
+// the grid is still complete and the accessible summary is still announced.
+
+import { number } from '../lib/report.js';
+
+const { constructs } = Astro.props;
+const order = ['compiles', 'fails-loud', 'documented'];
+const tally = Object.fromEntries(order.map((verdict) => [verdict, constructs.filter((row) => row.verdict === verdict).length]));
+
+const rows = constructs.map((row) => ({
+  id: row.id,
+  label: row.label,
+  use: row.use,
+  verdict: row.verdict,
+  code: row.code,
+  batch: row.batch,
+  note: row.note,
+  reason: row.reason,
+}));
+---
+
+<section class="stack" aria-labelledby="census-grid-title">
+  <div class="grid__head">
+    <h3 id="census-grid-title">The full census</h3>
+    <span class="count" data-count>{number(constructs.length)} of {number(constructs.length)} cells</span>
+  </div>
+
+  <div class="filters" role="group" aria-label="Filter cells by verdict">
+    <span class="filters__label">filter</span>
+    <button class="chip" type="button" data-filter="all" aria-pressed="true">all <span class="mono">{tally.compiles + tally['fails-loud'] + tally.documented}</span></button>
+    {order.map((verdict) => (
+      <button class="chip" type="button" data-filter={verdict} aria-pressed="false">
+        {verdict.replace('-', ' ')} <span class="mono">{tally[verdict]}</span>
+      </button>
+    ))}
+  </div>
+
+  <ul class="cells" data-cells>
+    {rows.map((row) => (
+      <li>
+        <button
+          class="cell"
+          type="button"
+          data-verdict={row.verdict}
+          data-id={row.id}
+          aria-label={`${row.label}, ${row.verdict}`}
+        ></button>
+      </li>
+    ))}
+  </ul>
+
+  <div class="panel" data-selected hidden aria-live="polite">
+    <h3 data-selected-label></h3>
+    <dl>
+      <dt>verdict</dt>
+      <dd data-selected-verdict></dd>
+      <dt>code</dt>
+      <dd data-selected-code></dd>
+      <dt>batch</dt>
+      <dd data-selected-batch></dd>
+    </dl>
+    <p class="small" data-selected-note></p>
+  </div>
+
+  <noscript>
+    <p class="notice">The grid is complete without JavaScript. Filtering and the per-cell readout need it.</p>
+  </noscript>
+
+  <p class="notice" data-empty hidden>No cell matches this filter.</p>
+</section>
+
+<script type="application/json" data-census-data set:html={JSON.stringify(rows)}></script>
+
+<script>
+  const data = JSON.parse(document.querySelector('[data-census-data]').textContent);
+  const byId = new Map(data.map((row) => [row.id, row]));
+
+  const cells = [...document.querySelectorAll('.cell')];
+  const count = document.querySelector('[data-count]');
+  const panel = document.querySelector('[data-selected]');
+  const empty = document.querySelector('[data-empty]');
+  const chips = [...document.querySelectorAll('[data-filter]')];
+  let active = 'all';
+
+  const apply = () => {
+    let shown = 0;
+    for (const cell of cells) {
+      const visible = active === 'all' || cell.dataset.verdict === active;
+      cell.closest('li').hidden = !visible;
+      if (visible) shown += 1;
+    }
+    count.textContent = `${shown} of ${cells.length} cells`;
+    empty.hidden = shown !== 0;
+    if (shown === 0) {
+      panel.hidden = true;
+      for (const other of cells) other.removeAttribute('aria-current');
+    }
+    for (const chip of chips) chip.setAttribute('aria-pressed', String(chip.dataset.filter === active));
+  };
+
+  const select = (cell) => {
+    const row = byId.get(cell.dataset.id);
+    if (!row) return;
+    for (const other of cells) other.setAttribute('aria-current', String(other === cell));
+    panel.hidden = false;
+    panel.querySelector('[data-selected-label]').textContent = row.label;
+    panel.querySelector('[data-selected-verdict]').textContent = row.verdict;
+    panel.querySelector('[data-selected-code]').textContent = row.code ?? 'n/a';
+    panel.querySelector('[data-selected-batch]').textContent = row.batch ?? 'n/a';
+    panel.querySelector('[data-selected-note]').textContent = row.note || row.reason || '';
+  };
+
+  for (const chip of chips) {
+    chip.addEventListener('click', () => {
+      active = chip.dataset.filter;
+      apply();
+    });
+  }
+
+  for (const cell of cells) {
+    cell.addEventListener('click', () => select(cell));
+  }
+
+  document.querySelector('[data-cells]').addEventListener('keydown', (event) => {
+    if (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft' && event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    const visible = cells.filter((cell) => !cell.closest('li').hidden);
+    const index = visible.indexOf(document.activeElement);
+    if (index === -1) return;
+    const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
+    visible[(index + step + visible.length) % visible.length].focus();
+    event.preventDefault();
+  });
+
+  apply();
+</script>

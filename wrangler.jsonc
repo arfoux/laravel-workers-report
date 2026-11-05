@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "laravel-workers-report",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-11-05",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": false
+  }
+}
+

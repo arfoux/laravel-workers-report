@@ -1,0 +1,165 @@
+---
+import Base from '../layouts/Base.astro';
+import Stat from '../components/Stat.astro';
+import { number, playbook } from '../lib/report.js';
+
+const statuses = Object.entries(playbook.statuses).sort((a, b) => b[1] - a[1]);
+const areas = Object.entries(playbook.areas).sort((a, b) => b[1] - a[1]);
+const severity = playbook.severity;
+const total = severity ? severity.P1 + severity.P2 + severity.P3 + severity.INFO : 0;
+const bands = severity
+  ? [
+      { key: 'P1', count: severity.P1, verdict: 'fails-loud', note: 'correctness or an absent guard' },
+      { key: 'P2', count: severity.P2, verdict: 'documented', note: 'wrong behaviour on an edge path' },
+      { key: 'P3', count: severity.P3, verdict: 'compiles', note: 'real but low-consequence' },
+      { key: 'INFO', count: severity.INFO, verdict: 'compiles', note: 'notes and observations' },
+    ]
+  : [];
+---
+
+<Base
+  title="Ledger, in the laravel-workers report"
+  description="The shape of the project's own audit ledger: how many findings, how they are distributed, and how many were closed."
+>
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">ledger</p>
+        <h1>{number(total)} findings, {number(playbook.statuses.OPEN ?? 0)} of {number(playbook.counts.ledger)} suggestions still open</h1>
+      </div>
+      <p>
+        The repository keeps its audit findings, corrections and suggested changes in
+        {' '}<code>{playbook.source}</code>. That file is a working-tree note and is
+        <strong>not published in the repository</strong>, so this page republishes only its shape:
+        counts, statuses, severities and areas. The item text is deliberately not copied here.
+      </p>
+    </div>
+
+    <div class="stats">
+      <Stat count={playbook.counts.ledger} label="ledger suggestions" />
+      <Stat count={playbook.statuses.DONE ?? 0} label="of them closed" verdict="compiles" />
+      <Stat count={playbook.statuses.OPEN ?? 0} label="still open" verdict="documented" />
+      <Stat count={playbook.citing} label="ledger rows citing a file:line" verdict="compiles" />
+    </div>
+
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">severity</p>
+        <h2>The findings concentrate at the bottom</h2>
+      </div>
+      <p>
+        A scratchpad run over the tree produced roughly {number(total)} recorded findings. The
+        distribution is the interesting part: the audit's own conclusion is that the bulk is notes,
+        not defects.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption>Counts are approximate in the source (`≈`); they are quoted as published.</caption>
+        <thead>
+          <tr>
+            <th scope="col">band</th>
+            <th scope="col">findings</th>
+            <th scope="col">share</th>
+            <th scope="col">what the band means in this ledger</th>
+          </tr>
+        </thead>
+        <tbody>
+          {bands.map((band) => (
+            <tr>
+              <th scope="row" class="mono">{band.key}</th>
+              <td class="mono">{number(band.count)}</td>
+              <td class="mono">{total ? Math.round((band.count / total) * 100) : 0}%</td>
+              <td class="small muted">{band.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <ul class="meter" role="img" aria-label={`Severity spread: ${bands.map((b) => `${b.key} ${b.count}`).join(', ')}`} style="margin-top:1rem">
+      {bands.map((band) => (
+        <li data-verdict={band.verdict} style={`width:${(band.count / total) * 100}%`}></li>
+      ))}
+    </ul>
+    <ul class="legend">
+      {bands.map((band) => <li><span class="mono">{band.key}</span> {number(band.count)}</li>)}
+    </ul>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">suggestions</p>
+        <h2>{number(playbook.counts.ledger)} rows, by status and by area</h2>
+      </div>
+      <p>
+        Each row is one suggested change with its own risk note and verification recipe. The
+        identifiers and statuses below are the ledger's own.
+      </p>
+    </div>
+
+    <ul class="list">
+      <li>
+        <div class="list__head">
+          <span class="list__title">status</span>
+        </div>
+        <p class="small">
+          {statuses.map(([status, count]) => `${status} ${count}`).join(', ')}, of{' '}
+          {number(playbook.counts.ledger)} rows.
+        </p>
+      </li>
+      <li>
+        <div class="list__head">
+          <span class="list__title">areas</span>
+        </div>
+        <p class="small">
+          {areas.map(([area, count]) => `${area} ${count}`).join(' · ')}
+        </p>
+      </li>
+      <li>
+        <div class="list__head">
+          <span class="list__title">rows</span>
+        </div>
+        <p class="small mono">
+          {playbook.rows.map((row) => `${row.id} ${row.status}`).join('   ')}
+        </p>
+        <p class="small muted">Identifier and status only; the suggestion text stays in the working tree.</p>
+      </li>
+    </ul>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">corrections</p>
+        <h2>{number(playbook.corrections?.total ?? 0)} claims the ledger itself corrected</h2>
+      </div>
+      <p>
+        The ledger keeps a corrections table for claims that turned out wrong, were refuted, or were
+        only partly true. Its rulings, again by shape:
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption>Ruling labels are published in Indonesian in the source; the counts are verbatim.</caption>
+        <thead>
+          <tr>
+            <th scope="col">ruling</th>
+            <th scope="col">claims</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(playbook.corrections?.rulings ?? {}).map(([ruling, count]) => (
+            <tr>
+              <th scope="row" class="mono">{ruling}</th>
+              <td class="mono">{count}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</Base>

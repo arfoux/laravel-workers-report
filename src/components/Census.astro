@@ -1,0 +1,74 @@
+---
+import { number } from '../lib/report.js';
+
+// A census block: a proportional meter plus one square per row, for any list of
+// rows that carries a verdict. Purely presentational; the numbers come from the
+// caller's rows.
+const { constructs: rows, title, caption = null, restLabel = 'unclassified' } = Astro.props;
+const order = ['compiles', 'fails-loud', 'documented'];
+const tally = Object.fromEntries(order.map((verdict) => [verdict, rows.filter((row) => row.verdict === verdict).length]));
+const rest = rows.length - order.reduce((sum, verdict) => sum + tally[verdict], 0);
+const summary = [
+  `${tally.compiles} compile`,
+  `${tally['fails-loud']} fail loud`,
+  `${tally.documented} documented`,
+  ...(rest > 0 ? [`${rest} ${restLabel}`] : []),
+].join(' · ');
+---
+
+<figure class="census">
+  <div class="census__head">
+    <span class="census__title">{title}</span>
+    <span>{number(rows.length)} rows · {summary}</span>
+  </div>
+
+  <ul class="meter" role="img" aria-label={`${summary} of ${rows.length} rows`}>
+    {order.map((verdict) => (
+      tally[verdict] > 0 && <li data-verdict={verdict} style={`width:${(tally[verdict] / rows.length) * 100}%`} />
+    ))}
+  </ul>
+
+  <ul class="cells cell-grid" aria-hidden="true" title={summary}>
+    {rows.map((row) => (
+      <li class="cell" data-verdict={row.verdict}></li>
+    ))}
+  </ul>
+
+  {caption && <figcaption class="small muted">{caption}</figcaption>}
+</figure>
+
+<style>
+  .census {
+    margin: 0;
+  }
+
+  .census__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    color: var(--fg-muted);
+    margin-bottom: 0.35rem;
+  }
+
+  .census__title {
+    color: var(--fg);
+  }
+
+  .meter {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .cells {
+    margin-top: 0.5rem;
+  }
+
+  figcaption {
+    margin-top: 0.5rem;
+    max-width: 60ch;
+  }
+</style>

@@ -1,0 +1,147 @@
+---
+import Base from '../layouts/Base.astro';
+import Stat from '../components/Stat.astro';
+import { number, headline, failsLoud, constructs, docsPages } from '../lib/report.js';
+
+const byBatch = constructs
+  .filter((row) => row.verdict === 'fails-loud')
+  .reduce((acc, row) => ((acc[row.batch ?? 'unbatched'] = (acc[row.batch ?? 'unbatched'] ?? 0) + 1), acc), {});
+const batches = Object.entries(byBatch).sort((a, b) => b[1] - a[1]);
+
+const walls = docsPages.filter((row) => row.klass === 'hard');
+const trades = docsPages.filter((row) => row.klass === 'soft');
+---
+
+<Base
+  title="Gaps, in the laravel-workers report"
+  description={`The ${number(headline.constructs.failsLoud)} constructs that refuse to compile, the ${number(walls.length)} platform walls, and the escape hatch for each.`}
+>
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">gaps</p>
+        <h1>Nothing degrades quietly</h1>
+      </div>
+      <p>
+        The design rule is that an unrepresentable construct stops the build instead of producing a
+        handler that is subtly wrong at runtime. That is why the fail-loud count is the largest of
+        the three buckets, and it is the intended shape, not a backlog.
+      </p>
+    </div>
+
+    <div class="stats">
+      <Stat count={headline.constructs.failsLoud} label="constructs fail the build" verdict="fails-loud" />
+      <Stat count={walls.length} label="documentation pages that are a platform wall" verdict="fails-loud" />
+      <Stat count={trades.length} label="pages that fit with a documented trade" verdict="documented" />
+      <Stat count={failsLoud.length} label="rows in the README escapes table" verdict="documented" />
+    </div>
+
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">the published table</p>
+        <h2>What refuses, and the way through</h2>
+      </div>
+      <p>Quoted from the escapes table in `README.md`: the construct, why it refuses, and the documented alternative.</p>
+    </div>
+
+    <ul class="list">
+      {failsLoud.map((row) => (
+        <li>
+          <div class="list__head">
+            <span class="list__title">{row.construct}</span>
+          </div>
+          <p class="small">{row.why}</p>
+          <p class="small muted">escape hatch: {row.escape}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">batch by batch</p>
+        <h2>Where the refusals cluster</h2>
+      </div>
+      <p>
+        Each construct was proven in a numbered batch; the failures spread the way the audit went,
+        not the way a release-note summary would.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <caption>{number(batches.length)} batches carry at least one refusal, out of {number(batches.length)} batches that produced any.</caption>
+        <thead>
+          <tr>
+            <th scope="col">batch</th>
+            <th scope="col">refusals</th>
+            <th scope="col">share of all refusals</th>
+          </tr>
+        </thead>
+        <tbody>
+          {batches.map(([batch, count]) => (
+            <tr>
+              <th scope="row" class="mono">{batch}</th>
+              <td class="mono">{count}</td>
+              <td class="small muted">{Math.round((count / headline.constructs.failsLoud) * 100)}%</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">platform walls</p>
+        <h2>{number(walls.length)} documentation pages with no compiled path</h2>
+      </div>
+      <p>These are the pages the coverage index marks as a wall rather than a trade: the capability cannot be carried, only replaced.</p>
+    </div>
+
+    <ul class="list">
+      {walls.map((row) => (
+        <li>
+          <div class="list__head">
+            <span class="list__title">{row.page}</span>
+            <span class="small muted mono">planned: {row.planned ?? 'none'}</span>
+          </div>
+          <p class="small">{row.note}</p>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <section class="section shell">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow">trades</p>
+        <h2>{number(trades.length)} pages that fit, with a trade attached</h2>
+      </div>
+      <p>The row's own note is the trade. All {number(trades.length)} are listed in the coverage page; these are the first twelve.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">page</th>
+            <th scope="col">planned</th>
+            <th scope="col">the trade</th>
+          </tr>
+        </thead>
+        <tbody>
+          {trades.slice(0, 12).map((row) => (
+            <tr>
+              <th scope="row" class="mono">{row.page}</th>
+              <td class="mono">{row.planned ?? 'n/a'}</td>
+              <td class="small muted">{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+</Base>
