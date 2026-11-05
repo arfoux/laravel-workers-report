@@ -30,19 +30,35 @@ Status colours come from the product's brand file and keep their meaning there.
 
 | token | hex | role | reason |
 |---|---|---|---|
-| `laravel` | `#FF2D20` | the PHP side; used only in the mark and one hairline | it is the product's own source colour |
-| `workers` | `#F38020` | the edge; used only in the mark and one hairline | it is the product's own edge colour |
+| `laravel` | `#FF2D20` | the PHP side; used only in the mark | it is the product's own source colour |
+| `workers` | `#F38020` | the edge; the accent and the focus ring | it is the product's own edge colour |
 | `shore` | `#1FA37C` | verdict: compiles | the brand file assigns it to a clean run |
 | `signal` | `#E0A126` | verdict: documented build-level decision | the brand file assigns it to named gaps |
 | `block` | `#D14343` | verdict: fails loud | the brand file assigns it to a refusal |
 | `ink` | `#0E1412` | text and dark ground | the brand's text colour |
 | `paper` | `#F5F2EA` | light ground | the brand's light ground |
 
-Two core colours (`laravel`, `workers`) plus one accent. The accent is `signal`, used for
-the single most important non-verdict action on a page (the active filter, the focused
-cell outline). Neutrals (`ink`, `paper`, and their two derived greys) are excluded from
-the count. `shore` / `signal` / `block` are status, never decoration: every use of them is
-paired with the verdict word, so colour is never the only signal.
+The three status colours are the brand hues, but each is *rendered* from a
+`light-dark()` pair rather than the brand hex directly:
+
+| verdict | light | dark | why |
+|---|---|---|---|
+| compiles | `#0f7f60` | `#2fbc93` | the brand's `#1FA37C` reaches only 2.6:1 on paper, which fails 4.5:1 even at the 26px the stat values use |
+| documented | `#9a6b00` | `#e0a126` (the brand hex) | `#E0A126` reaches 1.7:1 on paper; the dark value is the brand's own |
+| fails loud | `#a92f2f` | `#e06a6a` | `#D14343` reaches 3.3:1 on paper and 2.9:1 on ink, so neither theme can use it raw |
+
+Measured on the built site, the rendered values land at 4.19:1 to 6.59:1 against
+their ground in light and 5.52:1 to 7.96:1 in dark, all above the 3:1 large-text
+floor and, for cell fills, the 3:1 non-text floor. The brand's own hex stays in
+the README table above because that is where it is the source of truth; the site
+is where it has to be legible.
+
+Two core colours (`laravel`, `workers`) plus one accent. The accent is `workers`, used for
+the single most important non-verdict marker on a page (the current nav rule, the focused
+cell outline's neighbour). Neutrals (`ink`, `paper`, and their two derived greys) are
+excluded from the count. `shore` / `signal` / `block` are status, never decoration: every
+use of them is paired with the verdict word in a label or the legend, so colour is never
+the only signal.
 
 No third brand colour. No gradient as a surface; the mark's own gradient stays inside the
 mark.
@@ -73,12 +89,13 @@ interactive.
 - **ENERGY 2**: the first screen states the verdict at a readable size with the census
   grid directly under it. It does not shout, and there is no hero image or animated
   background.
-- **RHYTHM 3**: sections visibly differ. The census grid is full-bleed and dense; prose
-  sections are a narrow measure; the coverage table is wide and striped; the ledger runs
-  as a two-column list. No section is a repeat of another's internal layout.
+- **RHYTHM 3**: sections visibly differ. The census grid is dense and multi-row; prose
+  sections are a narrow measure; the coverage table is wide; the ledger runs as a
+  two-column list. No section is a repeat of another's internal layout.
 - **MOTION 1**: hover, focus and active states only. No entrance animation, no parallax,
-  no scroll reveal, no looping pulse. The only movement is state feedback, which is why
-  the reduced-motion query can stop everything without changing the page's meaning.
+  no scroll reveal, no looping pulse. The only movement is state feedback: a
+  `prefers-reduced-motion: reduce` block collapses every duration to zero and removes
+  smooth scrolling, and no rule relies on animation to carry meaning.
 
 ## Composition rules for this site
 
