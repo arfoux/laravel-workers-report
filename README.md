@@ -3,7 +3,8 @@
 The public report for [`arfoux/laravel-workers`](https://github.com/arfoux/laravel-workers):
 what the compiler carries, what it refuses, and where the platform wall sits.
 
-Live: <https://laravel-workers-report.arfoux.workers.dev>
+Deployed to Cloudflare Workers (static assets); the URL is the owner's to publish, so it is
+deliberately not recorded here. `npm run deploy` prints it.
 
 ## What this is
 
