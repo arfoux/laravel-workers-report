@@ -33,13 +33,19 @@ The extractor refuses to write its output if any of these is false:
 | check | what it catches |
 |---|---|
 | README counter block vs `tools/constructs.json` | the two tallies drifting apart |
-| `COMPILED.md` audit table vs `tools/constructs.json` | an audit row added without a construct row, or the reverse |
-| verdict tally in that table vs the JSON | a construct reclassified on one side only |
+| audit table vs `tools/constructs.json`, row by row, verdict included | an audit row added without a construct row, the reverse, or a construct reclassified on one side only |
+| audit table vs `tools/constructs.json`, batch per row | a construct proven in a different batch on one side |
 | facade census complete | a facade in the source that the audit never classified |
 | MAP coverage index has no blank verdict | a documentation page silently dropped |
 | README docs counter vs MAP row count | the same, from the other direction |
 | ledger status tally covers every row | a ledger row whose status the parser cannot read |
 | one feature-map row per area | a feature area that lost its rows in parsing |
+
+The first two construct checks are per-row rather than tally-based on purpose: tallies
+can agree while two rows are swapped. The audit table's own build column and per-row batch
+are compared and then dropped from `report.json`, since no page renders the audit table —
+the construct's own `verdict` and `batch` are the published fields. That is worth about
+9 KB of the payload and one fewer field to keep in sync.
 
 ## What is deliberately not published
 

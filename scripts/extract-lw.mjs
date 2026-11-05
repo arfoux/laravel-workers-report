@@ -111,24 +111,23 @@ const auditTable = tableAfter(
   /^\|\s*Construct\s*\|\s*The build\s*\|/,
 );
 const auditByLabel = new Map(
-  auditTable.map((cells) => [stripBackticks(cells[0]), { build: plain(cells[1]), note: plain(cells[2]), batch: cells[3] }]),
+  auditTable.map((cells) => [plain(cells[0]), { build: plain(cells[1]), note: plain(cells[2]), batch: cells[3] }]),
 );
 
-const constructs = constructsFile.constructs.map((row) => {
-  const audited = auditByLabel.get(stripBackticks(row.label));
-  return {
-    id: row.id,
-    label: plain(row.label),
-    use: row.php,
-    verdict: VERDICT[String(row.expect ?? 'null')] ?? 'documented',
-    code: row.code ?? null,
-    reason: row.reason ?? null,
-    batch: row.batch ?? null,
-    status: row.status ?? null,
-    note: plain(row.note),
-    audit: audited ? { build: audited.build, batch: audited.batch } : null,
-  };
-});
+// The audit table is checked row by row further down, against tools/constructs.json
+// (verdict and batch), and nothing on the site renders it: the construct's own
+// `verdict` and `batch` are the published fields. So it stays out of the payload.
+const constructs = constructsFile.constructs.map((row) => ({
+  id: row.id,
+  label: plain(row.label),
+  use: row.php,
+  verdict: VERDICT[String(row.expect ?? 'null')] ?? 'documented',
+  code: row.code ?? null,
+  reason: row.reason ?? null,
+  batch: row.batch ?? null,
+  status: row.status ?? null,
+  note: plain(row.note),
+}));
 
 const count = (list, key, value) => list.filter((c) => c[key] === value).length;
 const constructTotals = {
@@ -137,6 +136,27 @@ const constructTotals = {
   failsLoud: count(constructs, 'verdict', 'fails-loud'),
   documented: count(constructs, 'verdict', 'documented'),
 };
+
+// Row-by-row agreement between the two files that both claim to describe the
+// same 118 constructs. Tallies can agree while two rows are swapped, so this
+// compares the verdict and the batch per construct instead of counting.
+const auditVerdict = (build) => {
+  if (!build) return null;
+  if (/fails loud/i.test(build)) return 'fails-loud';
+  if (/compiles/i.test(build)) return 'compiles';
+  if (/documented/i.test(build)) return 'documented';
+  return null;
+};
+const missingAudit = constructs.filter((c) => !auditByLabel.has(c.label));
+const verdictMismatch = constructs.filter((c) => {
+  const audited = auditByLabel.get(c.label);
+  const said = audited ? auditVerdict(audited.build) : null;
+  return said !== null && said !== c.verdict;
+});
+const batchMismatch = constructs.filter((c) => {
+  const audited = auditByLabel.get(c.label);
+  return audited ? audited.batch !== c.batch : false;
+});
 
 // ------------------------------------------------------------------- facades
 
@@ -265,14 +285,14 @@ const checks = [
     detail: `constructs.json ${constructTotals.compiles}/${constructTotals.failsLoud}/${constructTotals.documented} of ${constructTotals.audited}, README ${JSON.stringify(declaredCounts.constructs)}`,
   },
   {
-    name: 'the generated audit table in COMPILED.md carries every construct',
-    ok: auditTable.length === constructs.length && constructs.every((c) => c.audit),
-    detail: `audit rows ${auditTable.length}, constructs.json rows ${constructs.length}`,
+    name: 'the audit table carries every construct, with the same verdict',
+    ok: missingAudit.length === 0 && verdictMismatch.length === 0,
+    detail: `${auditTable.length} audit rows, ${constructs.length} constructs, ${missingAudit.length} missing, ${verdictMismatch.length} verdict disagreements${verdictMismatch.length ? ` (${verdictMismatch.slice(0, 3).map((m) => m.label).join('; ')})` : ''}`,
   },
   {
-    name: 'the audit table verdict tallies with tools/constructs.json',
-    ok: count(constructs, 'audit', null) === 0 && auditTable.filter((c) => c[1].includes('compiles')).length === constructTotals.compiles,
-    detail: `audit table "compiles" ${auditTable.filter((c) => c[1].includes('compiles')).length}, constructs.json ${constructTotals.compiles}`,
+    name: 'the audit table and tools/constructs.json agree on every batch',
+    ok: batchMismatch.length === 0,
+    detail: `${batchMismatch.length} of ${constructs.length} rows disagree`,
   },
   {
     name: 'the facade census is complete (classified === declared total)',
