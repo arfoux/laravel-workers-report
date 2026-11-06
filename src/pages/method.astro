@@ -26,7 +26,7 @@ const pipeline = [
   {
     step: '4 · build',
     run: 'astro build',
-    what: 'A static build: no adapter, no server runtime. The whole site is HTML, one stylesheet and one script, served as Workers Static Assets.',
+    what: 'A static build: no framework adapter and no server-rendered pages. The only server-side code is a worker that serves the assets and answers a miss with 404.html; the pages are HTML with one stylesheet and one inline script (the theme toggle).',
   },
 ];
 
@@ -43,15 +43,15 @@ const notVerified = [
   },
   {
     what: 'the ledger lives outside the repository',
-    detail: 'notes/PLAYBOOK.local.md is a working-tree note that git does not track. Its numbers are quoted, but they are the only figures here an outside reader cannot independently re-derive from the repository alone.',
+    detail: 'notes/PLAYBOOK.local.md and .opencode/context.md are working-tree notes that git does not track (both are marked as such in the file table above). The figures and definitions quoted from them are the only ones here that an outside reader cannot re-derive from the repository alone.',
   },
   {
     what: 'quoted rows are reproduced with normalised punctuation',
-    detail: 'Rows copied out of the audited repository keep their wording but not its em dashes or en dashes, which this report does not use. Numbers, identifiers and counts are untouched.',
+    detail: 'Rows copied out of the audited repository keep their wording but not its markup or its dashes: code-span backticks, bold markers and em/en dashes are dropped (see plain() in scripts/extract-lw.mjs). Numbers, identifiers and counts are untouched.',
   },
   {
     what: 'the CPU numbers were measured on the Free plan, once',
-    detail: 'The gate records one run date (2026-10-18 for the probe, 2026-11-02 for the automated gate) and one account. They are reproducible with npm run gate:cpu, but this site does not re-run the gate.',
+    detail: 'The gate records one run date (2026-10-18 for the probe, 2026-11-02 for the automated gate) and one account. They are reproducible with npm run gate:cpu, but this site does not re-run the gate. They are also the one set of figures whose cells are shaped by hand: the extractor asserts each phrase they were transcribed from still appears in COMPILED.md, and it renders the table from that asserted set, so the cells can be short but not free.',
   },
 ];
 ---
@@ -136,6 +136,7 @@ const notVerified = [
             <th scope="col">file</th>
             <th scope="col">bytes</th>
             <th scope="col">sha-256 (prefix)</th>
+            <th scope="col">notes</th>
           </tr>
         </thead>
         <tbody>
@@ -144,6 +145,7 @@ const notVerified = [
               <th scope="row" class="mono">{file.path}</th>
               <td class="mono">{number(file.bytes)}</td>
               <td class="mono">{file.sha256}</td>
+              <td class="small muted">{file.tracked === false ? 'working-tree note, not in git' : ''}</td>
             </tr>
           ))}
         </tbody>

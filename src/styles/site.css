@@ -197,6 +197,13 @@
     letter-spacing: 0.04em;
   }
 
+  /* The lowercase treatment belongs to column labels. A row header carries the source's
+     own text — a construct's label, a file path, a ledger status — and lowercasing it
+     would print `readme.md` for `README.md` and `gate::allows()` for `Gate::allows()`. */
+  th[scope='row'] {
+    text-transform: none;
+  }
+
   caption {
     caption-side: bottom;
     text-align: left;

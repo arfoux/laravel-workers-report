@@ -7,6 +7,9 @@ const byBatch = constructs
   .filter((row) => row.verdict === 'fails-loud')
   .reduce((acc, row) => ((acc[row.batch ?? 'unbatched'] = (acc[row.batch ?? 'unbatched'] ?? 0) + 1), acc), {});
 const batches = Object.entries(byBatch).sort((a, b) => b[1] - a[1]);
+// Every construct carries the batch it was proven in, so the denominator is the
+// distinct batch labels across the census, not the refusals themselves.
+const allBatches = new Set(constructs.map((row) => row.batch ?? 'unbatched')).size;
 
 const walls = docsPages.filter((row) => row.klass === 'hard');
 const trades = docsPages.filter((row) => row.klass === 'soft');
@@ -41,7 +44,7 @@ const trades = docsPages.filter((row) => row.klass === 'soft');
         <p class="eyebrow">the published table</p>
         <h2>What refuses, and the way through</h2>
       </div>
-      <p>Quoted from the escapes table in `README.md`: the construct, why it refuses, and the documented alternative.</p>
+      <p>Quoted from the escapes table in <code>README.md</code>: the construct, why it refuses, and the documented alternative.</p>
     </div>
 
     <ul class="list">
@@ -71,7 +74,7 @@ const trades = docsPages.filter((row) => row.klass === 'soft');
 
     <div class="table-wrap">
       <table>
-        <caption>{number(batches.length)} batches carry at least one refusal, out of {number(batches.length)} batches that produced any.</caption>
+        <caption>{number(batches.length)} of the {number(allBatches)} batches the audit records carry at least one refusal.</caption>
         <thead>
           <tr>
             <th scope="col">batch</th>

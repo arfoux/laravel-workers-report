@@ -16,7 +16,7 @@ import { number, headline, constructs } from '../lib/report.js';
         <h1>{number(headline.constructs.audited)} constructs, {number(headline.constructs.compiles)} of them compile</h1>
       </div>
       <p>
-        `tools/constructs.json` is the complete list of PHP constructs the audit covers. Each one
+        <code>tools/constructs.json</code> is the complete list of PHP constructs the audit covers. Each one
         lands in exactly one bucket, and the three tallies below are recomputed from that file every
         time this site is built.
       </p>
@@ -32,7 +32,7 @@ import { number, headline, constructs } from '../lib/report.js';
 
     <div class="table-wrap" style="margin-top:1.5rem">
       <table>
-        <caption>Every construct in `tools/constructs.json`, with the batch it was proven in.</caption>
+        <caption>Every construct in <code>tools/constructs.json</code>, with the batch it was proven in.</caption>
         <thead>
           <tr>
             <th scope="col">construct</th>

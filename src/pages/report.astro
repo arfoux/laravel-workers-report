@@ -1,6 +1,24 @@
 ---
 import Base from '../layouts/Base.astro';
-import { number, report, headline, constructs, docsPages, features } from '../lib/report.js';
+import { report, constructs, docsPages, features, cpuFigures } from '../lib/report.js';
+
+// The counters table is built by walking report.json rather than by listing what to show,
+// so a figure added to the payload appears here without anyone remembering to add a row.
+// Arrays are skipped: every array in the payload is a set of rows with a table of its own
+// below, and the row tables are driven by the same arrays.
+const scalars = (value, prefix = '') =>
+  Object.entries(value).flatMap(([key, val]) => {
+    const path = prefix ? `${prefix}.${key}` : key;
+    if (Array.isArray(val)) return [];
+    if (val && typeof val === 'object') return scalars(val, path);
+    return [{ path, value: val }];
+  });
+const counters = [
+  ...scalars({ generatedAt: report.generatedAt, generator: report.generator }),
+  ...scalars(report.auditedRepo),
+  ...scalars(report.headline),
+  ...scalars(report.playbook),
+];
 ---
 
 <Base
@@ -27,14 +45,12 @@ import { number, report, headline, constructs, docsPages, features } from '../li
           <tr><th scope="col">figure</th><th scope="col">value</th></tr>
         </thead>
         <tbody>
-          <tr><th scope="row">constructs audited</th><td class="mono">{number(headline.constructs.audited)}</td></tr>
-          <tr><th scope="row">constructs compiling</th><td class="mono">{number(headline.constructs.compiles)}</td></tr>
-          <tr><th scope="row">constructs failing loud</th><td class="mono">{number(headline.constructs.failsLoud)}</td></tr>
-          <tr><th scope="row">constructs documented as build-level gaps</th><td class="mono">{number(headline.constructs.documented)}</td></tr>
-          <tr><th scope="row">facades classified</th><td class="mono">{number(headline.facades.classified)} of {number(headline.facades.total)}</td></tr>
-          <tr><th scope="row">Blade corpus byte-identical vs PHP 8.3</th><td class="mono">{number(headline.corpus.identical)} of {number(headline.corpus.cases)}</td></tr>
-          <tr><th scope="row">documentation pages with a verdict</th><td class="mono">{number(headline.docs.pages)}</td></tr>
-          <tr><th scope="row">feature-map rows</th><td class="mono">{number(features.length)}</td></tr>
+          {counters.map((row) => (
+            <tr>
+              <th scope="row" class="mono">{row.path}</th>
+              <td class="mono">{String(row.value)}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>
@@ -91,6 +107,30 @@ import { number, report, headline, constructs, docsPages, features } from '../li
               <td class="small">{row.edge}</td>
               <td class="mono">{row.klass}</td>
               <td class="mono">{row.plan}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    <h2>CPU figures</h2>
+    <div class="table-wrap">
+      <table>
+        <caption>
+          Copied from <code>COMPILED.md</code>; the extractor asserts each phrase these were
+          transcribed from is still in that file.
+        </caption>
+        <thead>
+          <tr><th scope="col">load</th><th scope="col">p50</th><th scope="col">p95</th><th scope="col">max / kill</th><th scope="col">what it is</th></tr>
+        </thead>
+        <tbody>
+          {cpuFigures.map((row) => (
+            <tr>
+              <th scope="row">{row.load}</th>
+              <td class="mono">{row.p50}</td>
+              <td class="mono">{row.p95}</td>
+              <td class="mono">{row.max}</td>
+              <td class="small muted">{row.note}</td>
             </tr>
           ))}
         </tbody>

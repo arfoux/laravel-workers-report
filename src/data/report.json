@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-05T19:16:50.614Z",
+ "generatedAt": "2026-11-06T00:08:59.487Z",
  "generator": "scripts/extract-lw.mjs",
  "auditedRepo": {
   "name": "arfoux/laravel-workers",
@@ -11,32 +11,44 @@
    {
     "path": "README.md",
     "sha256": "a6f30b58404b6401",
-    "bytes": 50203
+    "bytes": 50203,
+    "tracked": true
    },
    {
     "path": "MAP.md",
     "sha256": "6f731b2cdc915d86",
-    "bytes": 123235
+    "bytes": 123235,
+    "tracked": true
    },
    {
     "path": "COMPILED.md",
     "sha256": "152585d71c8005eb",
-    "bytes": 114029
+    "bytes": 114029,
+    "tracked": true
    },
    {
     "path": "tools/constructs.json",
     "sha256": "7469e3de871211c8",
-    "bytes": 68240
+    "bytes": 68240,
+    "tracked": true
    },
    {
     "path": "package.json",
     "sha256": "0d4ccbf7cc8e0d9e",
-    "bytes": 5792
+    "bytes": 5792,
+    "tracked": true
    },
    {
     "path": "notes/PLAYBOOK.local.md",
     "sha256": "641e5fdb72bf5972",
-    "bytes": 58786
+    "bytes": 58786,
+    "tracked": false
+   },
+   {
+    "path": ".opencode/context.md",
+    "sha256": "7a22bf36bfbe946b",
+    "bytes": 141845,
+    "tracked": false
    }
   ]
  },
@@ -87,8 +99,35 @@
     "withVerdict": 105,
     "pages": 105
    }
+  },
+  "verdict": {
+   "badge": "RUNS ON THE EDGE",
+   "heading": "RUNS WITH DECLARED GAPS"
   }
  },
+ "cpuFigures": [
+  {
+   "load": "page-like kernel load",
+   "p50": "5 ms",
+   "p95": "41 ms",
+   "max": "62 ms",
+   "note": "5 hot paths × 50 iterations, 200 requests / 4 connections"
+  },
+  {
+   "load": "bcryptjs cost 10 (login path)",
+   "p50": "93 to 104 ms",
+   "p95": "not measured",
+   "max": "not measured",
+   "note": "kept off every per-page path; native PBKDF2 of at most 100k iterations = 22 ms fallback"
+  },
+  {
+   "load": "burn control (must be caught)",
+   "p50": "about 2020 ms",
+   "p95": "n/a",
+   "max": "killed",
+   "note": "Free plan kills a single over-budget request at cpu=2020 ms, 1102 exceededCpu"
+  }
+ ],
  "constructs": [
   {
    "id": "now",
@@ -2552,13 +2591,19 @@
   "note": "working-tree note, not in the repository: only its shape is republished here",
   "counts": {
    "justified": 7,
-   "ledger": 15,
+   "ledger": 19,
    "corrections": 7,
    "fixes": 26
   },
   "statuses": {
-   "OPEN": 13,
-   "DONE": 2
+   "OPEN": 14,
+   "DONE": 5
+  },
+  "qualified": {
+   "OPEN (KOREKSI)": 1,
+   "OPEN (KLARIFIKASI)": 1,
+   "DONE (2026-11-03)": 4,
+   "DONE (2026-11-04), COMMIT 030A07B": 1
   },
   "areas": {
    "tes": 2,
@@ -2572,9 +2617,13 @@
    "instrumen": 1,
    "proses audit": 1,
    "bug P2": 1,
-   "tooling P3": 1
+   "tooling P3": 1,
+   "proses/tes": 1,
+   "fitur + bug P2": 1,
+   "bug P1": 1,
+   "bug P3": 1
   },
-  "citing": 6,
+  "citing": 8,
   "rows": [
    {
     "id": "S1",
@@ -2650,6 +2699,26 @@
     "id": "S15",
     "area": "tooling P3",
     "status": "DONE"
+   },
+   {
+    "id": "S16",
+    "area": "proses/tes",
+    "status": "DONE"
+   },
+   {
+    "id": "S17",
+    "area": "fitur + bug P2",
+    "status": "DONE"
+   },
+   {
+    "id": "S18",
+    "area": "bug P1",
+    "status": "DONE"
+   },
+   {
+    "id": "S19",
+    "area": "bug P3",
+    "status": "OPEN"
    }
   ],
   "corrections": {
@@ -2667,6 +2736,13 @@
    "P2": 72,
    "P3": 224,
    "INFO": 93
+  },
+  "scratchpadRows": 581,
+  "severityLegend": {
+   "P0": "build hijau tapi jawabannya salah (diam)",
+   "P1": "500/kehancuran tanpa sebab atau efek yang hilang",
+   "P2": "fail loud yang hilang",
+   "P3": "dead code / doc basi / gap bukti"
   }
  },
  "checks": [
@@ -2696,19 +2772,54 @@
    "detail": "105 rows, 0 blank"
   },
   {
+   "name": "the MAP tally line matches the classes parsed from its own table",
+   "ok": true,
+   "detail": "MAP tally [15,59,5,26], parsed 15/59/5/26"
+  },
+  {
    "name": "the README docs counter matches the MAP coverage index row count",
    "ok": true,
    "detail": "README {\"withVerdict\":105,\"pages\":105}, MAP rows 105"
   },
   {
-   "name": "the ledger status tally covers every ledger row",
+   "name": "the verdict strings README publishes are read, not restated",
    "ok": true,
-   "detail": "ledger 15 rows, statuses {\"OPEN\":13,\"DONE\":2}"
+   "detail": "badge \"RUNS ON THE EDGE\", CI heading \"RUNS WITH DECLARED GAPS\""
+  },
+  {
+   "name": "every CPU figure the coverage page prints is still in COMPILED.md",
+   "ok": true,
+   "detail": "14 of 14 phrases present"
+  },
+  {
+   "name": "the ledger table is read whole (a blank line inside it does not truncate)",
+   "ok": true,
+   "detail": "19 rows parsed, 19 in the G.3 section"
+  },
+  {
+   "name": "every ledger status is one of OPEN / DONE / TOLAK",
+   "ok": true,
+   "detail": "{\"OPEN\":14,\"DONE\":5}"
   },
   {
    "name": "the feature map yields at least one row per area",
    "ok": true,
    "detail": "49 rows across 7 areas"
+  },
+  {
+   "name": "the feature map is read whole (section 5, counted line by line)",
+   "ok": true,
+   "detail": "49 rows parsed, 49 in MAP §5"
+  },
+  {
+   "name": "the severity bands are defined in the source, not paraphrased here",
+   "ok": true,
+   "detail": "{\"P0\":\"build hijau tapi jawabannya salah (diam)\",\"P1\":\"500/kehancuran tanpa sebab atau efek yang hilang\",\"P2\":\"fail loud yang hilang\",\"P3\":\"dead code / doc basi / gap bukti\"}"
+  },
+  {
+   "name": "the audit scratchpad row count is quoted from the source",
+   "ok": true,
+   "detail": "scratchpad 581 rows, spread {\"P1\":10,\"P2\":72,\"P3\":224,\"INFO\":93}"
   }
  ]
 }

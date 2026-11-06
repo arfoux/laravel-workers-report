@@ -2,7 +2,7 @@
 import Base from '../layouts/Base.astro';
 import Census from '../components/Census.astro';
 import Stat from '../components/Stat.astro';
-import { number, headline, docsPages, features, playbook } from '../lib/report.js';
+import { number, headline, docsPages, features, playbook, cpuFigures } from '../lib/report.js';
 
 const order = ['fits', 'soft', 'hard', 'not-applicable'];
 // The census palette has three verdicts; the coverage index has four classes.
@@ -13,16 +13,14 @@ const plainPage = (page) => page.replace(/`/g, '');
 const classes = Object.fromEntries(order.map((klass) => [klass, docsPages.filter((row) => row.klass === klass).length]));
 const grouped = order.map((klass) => ({ klass, rows: docsPages.filter((row) => row.klass === klass) }));
 
-const measured = [
-  { what: 'page-like kernel load', p50: '5 ms', p95: '41 ms', max: '62 ms', note: '5 hot paths × 50 iterations, 200 requests / 4 connections' },
-  { what: 'bcryptjs cost 10 (login path)', p50: '93 to 104 ms', p95: 'not measured', max: 'not measured', note: 'kept off every per-page path; native PBKDF2 of at most 100k iterations = 22 ms fallback' },
-  { what: 'burn control (must be caught)', p50: 'about 2020 ms', p95: 'n/a', max: 'killed', note: 'Free plan kills a single over-budget request at cpu=2020 ms, 1102 exceededCpu' },
-];
+// The measurement rows come from `cpuFigures` in report.json: the extractor holds the
+// phrase each cell was transcribed from and fails the build if that phrase leaves
+// COMPILED.md, so this table cannot drift away from the file its caption names.
 ---
 
 <Base
   title="Coverage, in the laravel-workers report"
-  description="The 105 Laravel documentation pages with the verdict the project gives each one, plus what was measured against the Free-plan CPU budget."
+  description={`The ${number(headline.docs.pages)} Laravel documentation pages with the verdict the project gives each one, plus what was measured against the Free-plan CPU budget.`}
 >
   <section class="section shell">
     <div class="section-head">
@@ -31,7 +29,7 @@ const measured = [
         <h1>{number(headline.docs.pages)} documentation pages, {number(headline.docs.blank)} blanks</h1>
       </div>
       <p>
-        The coverage index in `MAP.md` section C gives every Laravel documentation page a verdict.
+        The coverage index in <code>MAP.md</code> section C gives every Laravel documentation page a verdict.
         A blank verdict is a build failure, so the set below is exhaustive by construction.
       </p>
     </div>
@@ -80,15 +78,20 @@ const measured = [
         <h2>What the CPU budget actually did</h2>
       </div>
       <p>
-        The repository's `tools/cpu-gate.mjs` deploys a probe worker and reads the platform's own
-        `cpuTime` and `outcome` back through `wrangler tail`. The numbers below are copied from
-        `COMPILED.md`, which records the run date and the probe worker's name.
+        The repository's <code>tools/cpu-gate.mjs</code> deploys a probe worker and reads the
+        platform's own <code>cpuTime</code> and <code>outcome</code> back through
+        {' '}<code>wrangler tail</code>. The cells below are copied from <code>COMPILED.md</code>,
+        which records the run date and the probe worker's name, and the build asserts that every
+        phrase they were transcribed from is still in that file.
       </p>
     </div>
 
     <div class="table-wrap">
       <table>
-        <caption>Free plan: 10 ms CPU per invocation as documented; enforcement measured softer than the docs (a per-isolate rollover bank).</caption>
+        <caption>
+          Free plan: 10 ms CPU per invocation as documented; enforcement measured softer than the
+          docs (a per-isolate rollover bank). Cells are the source's figures, shortened for width.
+        </caption>
         <thead>
           <tr>
             <th scope="col">load</th>
@@ -99,9 +102,9 @@ const measured = [
           </tr>
         </thead>
         <tbody>
-          {measured.map((row) => (
+          {cpuFigures.map((row) => (
             <tr>
-              <th scope="row">{row.what}</th>
+              <th scope="row">{row.load}</th>
               <td class="mono">{row.p50}</td>
               <td class="mono">{row.p95}</td>
               <td class="mono">{row.max}</td>
@@ -125,14 +128,14 @@ const measured = [
         <h2>{number(features.length)} rows, {number(new Set(features.map((f) => f.area)).size)} areas</h2>
       </div>
       <p>
-        `MAP.md` section 5, one row per Laravel capability: what it maps to on the edge, whether it
+        <code>MAP.md</code> section 5, one row per Laravel capability: what it maps to on the edge, whether it
         fits, and the plan letter that carries it.
       </p>
     </div>
 
     <div class="table-wrap">
       <table>
-        <caption>Class per row comes from the row's own marker: fits, documented trade (`soft`), or platform wall (`hard`).</caption>
+        <caption>Class per row comes from the row's own marker: fits, documented trade (<code>soft</code>), or platform wall (<code>hard</code>).</caption>
         <thead>
           <tr>
             <th scope="col">area</th>
@@ -166,8 +169,9 @@ const measured = [
         <h2>Where each figure comes from</h2>
       </div>
       <p>
-        Nothing on this site is typed by hand: `scripts/extract-lw.mjs` reads the repository and
-        `scripts/verify-lw.mjs` fails when a figure drifts from the file it was read out of.
+        Nothing on this site is typed by hand: <code>scripts/extract-lw.mjs</code> reads the
+        repository and <code>scripts/verify-lw.mjs</code> fails when a figure drifts from the file it
+        was read out of.
       </p>
     </div>
 
@@ -177,8 +181,8 @@ const measured = [
         { figure: `${number(headline.facades.classified)} of ${number(headline.facades.total)} facades classified`, source: 'the vendored Illuminate/Support/Facades directory (Laravel 13)', cross: 'the facade census completeness check' },
         { figure: `${number(headline.corpus.identical)}/${number(headline.corpus.cases)} Blade cases byte-identical`, source: 'the recorded oracle run against PHP 8.3.30', cross: 'declared counter block in README.md' },
         { figure: `${number(headline.docs.pages)} docs pages with a verdict`, source: 'MAP.md section C', cross: 'README.md docs counter' },
-        { figure: `${number(features.length)} feature-map rows`, source: 'MAP.md section 5', cross: 'no independent counter: the row count is the figure' },
-        { figure: `${number(playbook.counts.ledger)} ledger rows, ${number(playbook.counts.corrections)} corrections`, source: 'notes/PLAYBOOK.local.md (working-tree note, not in the repository)', cross: `status tally covers all ${number(playbook.counts.ledger)} rows` },
+        { figure: `${number(features.length)} feature-map rows`, source: 'MAP.md section 5', cross: 'the §5 area tables, counted line by line' },
+        { figure: `${number(playbook.counts.ledger)} ledger rows, ${number(playbook.counts.corrections)} corrections`, source: 'notes/PLAYBOOK.local.md (working-tree note, not in the repository)', cross: `an independent scan of the G.3 section (all ${number(playbook.counts.ledger)} rows)` },
       ].map((row) => (
         <li>
           <div class="list__head"><span class="list__title">{row.figure}</span></div>

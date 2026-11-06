@@ -22,12 +22,24 @@ const REPO = resolve(argOf('--repo', process.env.LW_REPO || '../laravel-workers'
 const OUT = resolve(argOf('--out', 'src/data/report.json'));
 
 const read = (rel) => readFileSync(resolve(REPO, rel), 'utf8');
+// Two of the files this report reads (`notes/PLAYBOOK.local.md` and
+// `.opencode/context.md`) are working-tree notes that git does not track, so the
+// published inventory must not imply that every file is in the repository.
+const isTracked = (rel) => {
+  try {
+    execFileSync('git', ['-C', REPO, 'ls-files', '--error-unmatch', rel], { stdio: 'ignore' });
+    return true;
+  } catch {
+    return false;
+  }
+};
 const provenance = (rel) => {
   const abs = resolve(REPO, rel);
   return {
     path: rel,
     sha256: createHash('sha256').update(readFileSync(abs)).digest('hex').slice(0, 16),
     bytes: statSync(abs).size,
+    tracked: isTracked(rel),
   };
 };
 
@@ -39,6 +51,10 @@ function tableAfter(lines, headerPattern, { maxRows = Infinity } = {}) {
   for (let i = start + 1; i < lines.length && rows.length < maxRows; i++) {
     const line = lines[i];
     if (!line.startsWith('|')) {
+      // Prose ends the block; a blank line does not. `notes/PLAYBOOK.local.md`
+      // breaks its ledger table with one blank line, and stopping there would
+      // silently drop every row below it (S16-S19 were published as absent).
+      if (!line.trim()) continue;
       if (rows.length) break;
       continue;
     }
@@ -106,8 +122,9 @@ const VERDICT = { ok: 'compiles', fail: 'fails-loud', null: 'documented' };
 // ---------------------------------------------------------------- constructs
 
 const constructsFile = JSON.parse(read('tools/constructs.json'));
+const compiledText = read('COMPILED.md');
 const auditTable = tableAfter(
-  read('COMPILED.md').split('\n'),
+  compiledText.split('\n'),
   /^\|\s*Construct\s*\|\s*The build\s*\|/,
 );
 const auditByLabel = new Map(
@@ -212,10 +229,36 @@ const docsTotals = {
   planned: docsPages.filter((p) => p.planned).length,
 };
 docsTotals.blank = docsPages.filter((p) => p.klass === 'unknown').length;
+// The table states its own tally next to itself, which is a second surface for the
+// same distribution: the class counts above are checked against this line too. The
+// line puts prose between some emoji and the next count, so each count is read as
+// the digits standing immediately before its own emoji.
+const tallyLine = mapLines.find((line) => line.startsWith('**Tally:'));
+const tallyCount = (emoji) => {
+  const match = tallyLine?.match(new RegExp(`(\\d+)\\s*${emoji}`));
+  return match ? Number(match[1]) : null;
+};
+const docsTally = tallyLine ? [tallyCount('✅'), tallyCount('🟡'), tallyCount('🔴'), tallyCount('⛔')] : [];
 
 // ------------------------------------------------- feature map rows (MAP §5)
 
 const featureRows = featureMapRows(mapLines, /^## 6\./);
+
+// Independent of `featureMapRows`: MAP §5 holds seven area tables, so its rows can
+// be counted straight off the lines (five cells, a class emoji in the third one).
+// That scan does not stop at a blank line, so an area table interrupted by one
+// shows up here as a mismatch instead of as silently missing rows.
+const featureSectionRows = (() => {
+  const from = mapLines.findIndex((line) => /^##\s*5\./.test(line));
+  if (from === -1) return [];
+  const rest = mapLines.slice(from + 1);
+  const to = rest.findIndex((line) => /^##\s/.test(line));
+  return (to === -1 ? rest : rest.slice(0, to)).filter((line) => {
+    if (!line.startsWith('|')) return false;
+    const cells = line.slice(1, line.endsWith('|') ? -1 : undefined).split('|').map((c) => c.trim());
+    return cells.length === 5 && Boolean(CLASS[firstEmoji(cells[2])]);
+  });
+})();
 
 // --------------------------------------------- README "Compiles today" tables
 
@@ -241,12 +284,26 @@ const cleanCell = (s) => s.replace(/\*\*/g, '').replace(/`/g, '').trim();
 const firstToken = (s) => (cleanCell(s).match(/^[A-Za-z]+/) || ['UNKNOWN'])[0].toUpperCase();
 const tally = (values) => values.reduce((acc, value) => ((acc[value] = (acc[value] ?? 0) + 1), acc), {});
 
-const ledgerRows = tableAfter(playbookLines, /^\|\s*#\s*\|\s*area\s*\|\s*saran\s*\|/).map((cells) => ({
-  id: cleanCell(cells[0]),
-  area: cleanCell(cells[1]) || 'other',
-  status: firstToken(cells[4]),
-  cites: /[A-Za-z0-9_.-]+:\d+/.test(cells[5] ?? ''),
-}));
+// The ledger's `saran` cell sometimes contains a literal `|`, which shifts every
+// cell after it, so the status is found by its own shape and the evidence is
+// always the last cell. `cells[4]`/`cells[5]` would misread those rows.
+const LEDGER_STATUS = /^(OPEN|DONE|TOLAK)\b/;
+const ledgerRows = tableAfter(playbookLines, /^\|\s*#\s*\|\s*area\s*\|\s*saran\s*\|/).map((cells) => {
+  const statusCell = cells.slice(2).map((cell) => cleanCell(cell).toUpperCase()).find((cell) => LEDGER_STATUS.test(cell));
+  const token = statusCell ? statusCell.match(LEDGER_STATUS)[1] : firstToken(cells[4]);
+  return {
+    id: cleanCell(cells[0]),
+    area: cleanCell(cells[1]) || 'other',
+    status: token,
+    // The qualifier is a real distinction in the ledger ("OPEN (koreksi)"), so
+    // it is kept next to the token instead of being thrown away.
+    qualifier: statusCell && statusCell !== token ? statusCell.slice(token.length).trim() : null,
+    // The evidence cell is the last non-empty one: rows whose `saran` text holds
+    // a literal `|` gain cells, and the file is CRLF so the trailing pipe is not
+    // trimmed. Both make a fixed index unreliable.
+    cites: /[A-Za-z0-9_./-]+:\d+/.test([...cells].reverse().find((cell) => cell.trim() !== '') ?? ''),
+  };
+});
 const corrections = tableAfter(playbookLines, /^\|\s*hal\s*\|\s*putusan\s*\|\s*tanggal\s*\|/).map((cells) => ({
   ruling: firstToken(cells[1]),
   date: cleanCell(cells[2]),
@@ -254,6 +311,36 @@ const corrections = tableAfter(playbookLines, /^\|\s*hal\s*\|\s*putusan\s*\|\s*t
 const severity = (playbookLines.find((l) => l.includes('sebaran severity'))?.match(/P1≈(\d+)\s*·\s*P2≈(\d+)\s*·\s*P3≈(\d+)\s*·\s*INFO≈(\d+)/) || [])
   .slice(1)
   .map(Number);
+// The audit scratchpad the severity spread comes from, quoted with the source's
+// own approximate marker: it is a row count for the scratchpad, not a headline
+// number of defects, so the site must not sum the bands and call that "findings".
+const scratchpad = (playbookLines.find((l) => l.includes('Ledger scratchpad'))?.match(/±(\d+)\s*baris/) || [])[1];
+
+// The bands' own definitions live in a second working-tree note (also not in the
+// repository). They are quoted verbatim so this report never has to paraphrase
+// what P1/P2/P3 mean - a paraphrase of "P2" is a claim of its own.
+const contextLines = read('.opencode/context.md').split('\n');
+const severityLegend = (() => {
+  const line = contextLines.find((l) => l.startsWith('Klasifikasi:'));
+  if (!line) return null;
+  const bands = {};
+  for (const part of line.replace(/^Klasifikasi:\s*/, '').replace(/\.\s*$/, '').split('·')) {
+    const match = part.match(/\*\*P(\d)\*\*\s*=\s*(.+)/);
+    if (match) bands[`P${match[1]}`] = match[2].trim();
+  }
+  return Object.keys(bands).length ? bands : null;
+})();
+
+// Independent of `tableAfter`: every `| S<n> |` line between the G.3 heading and
+// the next `##` heading is a ledger row. The ledger table is interrupted by a
+// blank line, so a parser that stops at the first blank publishes a short list.
+const ledgerSectionRows = (() => {
+  const from = playbookLines.findIndex((line) => /^##\s*G\.3\b/.test(line));
+  if (from === -1) return [];
+  const rest = playbookLines.slice(from + 1);
+  const to = rest.findIndex((line) => /^##\s/.test(line));
+  return (to === -1 ? rest : rest.slice(0, to)).filter((line) => /^\|\s*S\d+\s*\|/.test(line));
+})();
 
 const playbook = {
   published: false,
@@ -266,12 +353,69 @@ const playbook = {
     fixes: tableAfter(playbookLines, /^\|\s*#\s*\|\s*sev\s*\|\s*fix\s*\|/).length,
   },
   statuses: tally(ledgerRows.map((row) => row.status)),
+  qualified: tally(ledgerRows.filter((row) => row.qualifier).map((row) => `${row.status} ${row.qualifier}`)),
   areas: tally(ledgerRows.map((row) => row.area)),
   citing: ledgerRows.filter((row) => row.cites).length,
   rows: ledgerRows.map(({ id, area, status }) => ({ id, area, status })),
   corrections: corrections.length ? { total: corrections.length, rulings: tally(corrections.map((row) => row.ruling)) } : null,
   severity: severity.length === 4 ? { P1: severity[0], P2: severity[1], P3: severity[2], INFO: severity[3] } : null,
+  scratchpadRows: scratchpad ? Number(scratchpad) : null,
+  severityLegend,
 };
+
+// README publishes the project's verdict twice, and the two strings are not the same
+// one: the shields badge under the title, and the heading its CI reporter posts on a
+// pull request. Both are read from the file rather than restated here.
+const verdictBadge = decodeURIComponent(readmeLines.join('\n').match(/badge\/verdict-([A-Za-z0-9%._~-]+?)-[0-9A-Fa-f]{6}/)?.[1] ?? '');
+const verdictHeading = readmeLines.join('\n').match(/`### Verdict: ([^`]+)`/)?.[1] ?? '';
+
+// ------------------------------------------------- published CPU figures (COMPILED.md)
+// The measurement table on /coverage/ is the one table on the site whose cells are the
+// project's prose trimmed for width, so it is not parsed into fields. Instead each figure
+// the page prints is listed with the phrase it was transcribed from, and every phrase is
+// asserted to still appear in COMPILED.md, the file the table's caption names. A source
+// that changes its numbers fails this build rather than leaving the table behind. Both the
+// rows and the phrases live here, so the page renders the asserted set and nothing else.
+const cpuFigures = [
+  {
+    load: 'page-like kernel load',
+    p50: '5 ms',
+    p95: '41 ms',
+    max: '62 ms',
+    note: '5 hot paths × 50 iterations, 200 requests / 4 connections',
+    source: [
+      'cpu p50 5 ms / p95 41 ms / max 62 ms',
+      '5 kernel hot paths',
+      '50 iterations each per request',
+      '200 requests over 4 concurrent connections',
+    ],
+  },
+  {
+    load: 'bcryptjs cost 10 (login path)',
+    p50: '93 to 104 ms',
+    p95: 'not measured',
+    max: 'not measured',
+    note: 'kept off every per-page path; native PBKDF2 of at most 100k iterations = 22 ms fallback',
+    source: ['cost10=93–104', 'login-only path', 'PBKDF2 (≤100k iters, measured 22 ms)'],
+  },
+  {
+    load: 'burn control (must be caught)',
+    p50: 'about 2020 ms',
+    p95: 'n/a',
+    max: 'killed',
+    note: 'Free plan kills a single over-budget request at cpu=2020 ms, 1102 exceededCpu',
+    source: ['cpu=2020 ms', '1102 `exceededCpu`'],
+  },
+];
+const cpuPublished = [
+  ...cpuFigures.flatMap((row) => row.source.map((needle) => [row.load, needle])),
+  ['the Free-plan budget, as the caption states it', '10 ms CPU per'],
+  ['the budget as documented', 'invocation** as documented'],
+  ['the enforcement finding', 'softer than the docs'],
+  ['the rollover bank', 'rollover bank'],
+  ['the tail ratio in the notice', 'p95 tail is 4× over it'],
+];
+const cpuMissing = cpuPublished.filter(([, needle]) => !compiledText.includes(needle));
 
 const checks = [
   {
@@ -305,19 +449,61 @@ const checks = [
     detail: `${docsTotals.pages} rows, ${docsTotals.blank} blank`,
   },
   {
-    name: 'the README docs counter matches the MAP coverage index row count',
-    ok: declaredCounts.docs?.withVerdict === docsTotals.pages && declaredCounts.docs?.pages === docsTotals.pages,
+    name: 'the MAP tally line matches the classes parsed from its own table',
+    ok:
+      docsTally.length === 4 &&
+      docsTally[0] === docsTotals.fits &&
+      docsTally[1] === docsTotals.soft &&
+      docsTally[2] === docsTotals.hard &&
+      docsTally[3] === docsTotals['not-applicable'],
+    detail: `MAP tally ${JSON.stringify(docsTally)}, parsed ${['fits', 'soft', 'hard', 'not-applicable'].map((klass) => docsTotals[klass]).join('/')}`,
+  },
+ {
+  name: 'the README docs counter matches the MAP coverage index row count',
+  ok: declaredCounts.docs?.withVerdict === docsTotals.pages && declaredCounts.docs?.pages === docsTotals.pages,
     detail: `README ${JSON.stringify(declaredCounts.docs)}, MAP rows ${docsTotals.pages}`,
   },
   {
-    name: 'the ledger status tally covers every ledger row',
-    ok: Object.values(playbook.statuses).reduce((a, b) => a + b, 0) === playbook.counts.ledger,
-    detail: `ledger ${playbook.counts.ledger} rows, statuses ${JSON.stringify(playbook.statuses)}`,
+    name: 'the verdict strings README publishes are read, not restated',
+    ok: verdictBadge.length > 0 && verdictHeading.length > 0,
+    detail: `badge "${verdictBadge}", CI heading "${verdictHeading}"`,
+  },
+  {
+    name: 'every CPU figure the coverage page prints is still in COMPILED.md',
+    ok: cpuMissing.length === 0 && cpuPublished.length >= 12,
+    detail: `${cpuPublished.length - cpuMissing.length} of ${cpuPublished.length} phrases present${
+      cpuMissing.length ? `, missing: ${cpuMissing.map(([label, needle]) => `${label} (${needle})`).join('; ')}` : ''
+    }`,
+  },
+  {
+    name: 'the ledger table is read whole (a blank line inside it does not truncate)',
+    ok: ledgerSectionRows.length === playbook.counts.ledger && playbook.counts.ledger > 0,
+    detail: `${playbook.counts.ledger} rows parsed, ${ledgerSectionRows.length} in the G.3 section`,
+  },
+  {
+    name: 'every ledger status is one of OPEN / DONE / TOLAK',
+    ok: Object.keys(playbook.statuses).every((key) => ['OPEN', 'DONE', 'TOLAK'].includes(key)),
+    detail: JSON.stringify(playbook.statuses),
   },
   {
     name: 'the feature map yields at least one row per area',
     ok: new Set(featureRows.map((row) => row.area)).size >= 5,
     detail: `${featureRows.length} rows across ${new Set(featureRows.map((row) => row.area)).size} areas`,
+  },
+  {
+    name: 'the feature map is read whole (section 5, counted line by line)',
+    ok: featureSectionRows.length === featureRows.length && featureRows.length > 0,
+    detail: `${featureRows.length} rows parsed, ${featureSectionRows.length} in MAP §5`,
+  },
+  {
+    name: 'the severity bands are defined in the source, not paraphrased here',
+    ok: !!playbook.severityLegend && ['P1', 'P2', 'P3'].every((band) => !!playbook.severityLegend[band]),
+    detail: JSON.stringify(playbook.severityLegend),
+  },
+  {
+    name: 'the audit scratchpad row count is quoted from the source',
+    ok: playbook.scratchpadRows !== null && playbook.scratchpadRows > 0,
+    detail: `scratchpad ${playbook.scratchpadRows} rows, spread ${JSON.stringify(playbook.severity)}`,
   },
 ];
 
@@ -332,7 +518,8 @@ try {
   head = null;
 }
 
-const files = ['README.md', 'MAP.md', 'COMPILED.md', 'tools/constructs.json', 'package.json', 'notes/PLAYBOOK.local.md'];
+const files = ['README.md', 'MAP.md', 'COMPILED.md', 'tools/constructs.json', 'package.json', 'notes/PLAYBOOK.local.md', '.opencode/context.md'];
+
 const report = {
   generatedAt: new Date().toISOString(),
   generator: 'scripts/extract-lw.mjs',
@@ -351,7 +538,10 @@ const report = {
     corpus: declaredCounts.corpus,
     docs: docsTotals,
     declared: declaredCounts,
+    verdict: { badge: verdictBadge, heading: verdictHeading },
   },
+  // The renderable cells only: the phrases each was transcribed from stay in this script.
+  cpuFigures: cpuFigures.map(({ load, p50, p95, max, note }) => ({ load, p50, p95, max, note })),
   constructs,
   docsPages,
   features: featureRows,

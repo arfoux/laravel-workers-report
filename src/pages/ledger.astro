@@ -5,31 +5,37 @@ import { number, playbook } from '../lib/report.js';
 
 const statuses = Object.entries(playbook.statuses).sort((a, b) => b[1] - a[1]);
 const areas = Object.entries(playbook.areas).sort((a, b) => b[1] - a[1]);
+// Rows, not labels: one qualifier ("DONE (2026-11-03)") can cover several rows.
+const qualifiedRows = Object.values(playbook.qualified ?? {}).reduce((a, b) => a + b, 0);
 const severity = playbook.severity;
 const total = severity ? severity.P1 + severity.P2 + severity.P3 + severity.INFO : 0;
+// The band definitions are the source's own words (`.opencode/context.md`, a
+// working-tree note). Paraphrasing them would put this report's reading of P1/P2/P3
+// on the page as if it were the project's, so the text is quoted instead.
+const legend = playbook.severityLegend ?? {};
 const bands = severity
   ? [
-      { key: 'P1', count: severity.P1, verdict: 'fails-loud', note: 'correctness or an absent guard' },
-      { key: 'P2', count: severity.P2, verdict: 'documented', note: 'wrong behaviour on an edge path' },
-      { key: 'P3', count: severity.P3, verdict: 'compiles', note: 'real but low-consequence' },
-      { key: 'INFO', count: severity.INFO, verdict: 'compiles', note: 'notes and observations' },
+      { key: 'P1', count: severity.P1, verdict: 'fails-loud', note: legend.P1 },
+      { key: 'P2', count: severity.P2, verdict: 'documented', note: legend.P2 },
+      { key: 'P3', count: severity.P3, verdict: 'compiles', note: legend.P3 },
+      { key: 'INFO', count: severity.INFO, verdict: 'compiles', note: null },
     ]
   : [];
 ---
 
 <Base
   title="Ledger, in the laravel-workers report"
-  description="The shape of the project's own audit ledger: how many findings, how they are distributed, and how many were closed."
+  description="The shape of the project's own audit ledger: how many suggestions it holds, how the audit's severities distribute, and how many are closed."
 >
   <section class="section shell">
     <div class="section-head">
       <div>
         <p class="eyebrow">ledger</p>
-        <h1>{number(total)} findings, {number(playbook.statuses.OPEN ?? 0)} of {number(playbook.counts.ledger)} suggestions still open</h1>
+        <h1>{number(playbook.counts.ledger)} suggestions, {number(playbook.statuses.OPEN ?? 0)} still open, {number(playbook.statuses.DONE ?? 0)} closed</h1>
       </div>
       <p>
         The repository keeps its audit findings, corrections and suggested changes in
-        {' '}<code>{playbook.source}</code>. That file is a working-tree note and is
+        {' '}<code>{playbook.source}</code>. That file is a working-tree note and is{' '}
         <strong>not published in the repository</strong>, so this page republishes only its shape:
         counts, statuses, severities and areas. The item text is deliberately not copied here.
       </p>
@@ -48,21 +54,27 @@ const bands = severity
         <h2>The findings concentrate at the bottom</h2>
       </div>
       <p>
-        A scratchpad run over the tree produced roughly {number(total)} recorded findings. The
-        distribution is the interesting part: the audit's own conclusion is that the bulk is notes,
-        not defects.
+        A read-through scratchpad over the tree holds roughly {number(playbook.scratchpadRows)} table
+        rows. The bands below are that scratchpad's severity spread, which the source marks with
+        {' '}<code>≈</code> - so the total is a shape, not a count of defects. The source's own reading
+        of it: the result concentrates in P3/INFO, P1/P2 are real and not zero, but the larger part
+        are notes.
       </p>
     </div>
 
     <div class="table-wrap">
       <table>
-        <caption>Counts are approximate in the source (`≈`); they are quoted as published.</caption>
+        <caption>
+          Counts are approximate in the source (<code>≈</code>). Definitions are quoted verbatim from
+          <code>.opencode/context.md</code>, another working-tree note, in its own Indonesian; P0 (a
+          green build that answers wrongly) is defined there but does not appear in this spread.
+        </caption>
         <thead>
           <tr>
             <th scope="col">band</th>
-            <th scope="col">findings</th>
+            <th scope="col">rows</th>
             <th scope="col">share</th>
-            <th scope="col">what the band means in this ledger</th>
+            <th scope="col">the source's own definition of the band</th>
           </tr>
         </thead>
         <tbody>
@@ -71,7 +83,9 @@ const bands = severity
               <th scope="row" class="mono">{band.key}</th>
               <td class="mono">{number(band.count)}</td>
               <td class="mono">{total ? Math.round((band.count / total) * 100) : 0}%</td>
-              <td class="small muted">{band.note}</td>
+              <td class="small muted">
+                {band.note ?? 'not defined in the source\'s four-band classification'}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -109,6 +123,13 @@ const bands = severity
           {statuses.map(([status, count]) => `${status} ${count}`).join(', ')}, of{' '}
           {number(playbook.counts.ledger)} rows.
         </p>
+        {qualifiedRows ? (
+          <p class="small muted">
+            {number(qualifiedRows)} of those rows carry the ledger's own qualifier
+            ({number(Object.keys(playbook.qualified).length)} distinct labels):{' '}
+            {Object.entries(playbook.qualified).map(([label, count]) => `${label} (${count})`).join(' · ')}.
+          </p>
+        ) : null}
       </li>
       <li>
         <div class="list__head">

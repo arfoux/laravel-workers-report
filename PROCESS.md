@@ -37,9 +37,16 @@ The extractor refuses to write its output if any of these is false:
 | audit table vs `tools/constructs.json`, batch per row | a construct proven in a different batch on one side |
 | facade census complete | a facade in the source that the audit never classified |
 | MAP coverage index has no blank verdict | a documentation page silently dropped |
+| MAP tally line vs the classes parsed from its own table | the table and the summary printed next to it drifting apart |
 | README docs counter vs MAP row count | the same, from the other direction |
-| ledger status tally covers every row | a ledger row whose status the parser cannot read |
+| the ledger table is read whole (G.3 section scan) | a blank line inside the ledger table truncating it. This is not hypothetical: the table is interrupted by one blank line, and the parser used to publish 15 of its 19 rows |
+| every ledger status is a known token (OPEN / DONE / TOLAK) | a shifted column making a status unreadable or invented |
 | one feature-map row per area | a feature area that lost its rows in parsing |
+| the feature map is read whole (MAP §5, counted line by line) | the same truncation class, in the section with seven tables |
+| the severity bands are defined in the source | this report paraphrasing what P1/P2/P3 mean and presenting the paraphrase as the project's |
+| the verdict badge and the CI comment heading are both read from README | a typed-in verdict surviving a change to either string |
+| every CPU figure the /coverage/ table prints is still a phrase in `COMPILED.md` | the one hand-shaped table drifting away from the file its caption names |
+| the audit scratchpad row count is quoted from the source | the severity spread losing the denominator it came from |
 
 The first two construct checks are per-row rather than tally-based on purpose: tallies
 can agree while two rows are swapped. The audit table's own build column and per-row batch
@@ -53,6 +60,12 @@ the construct's own `verdict` and `batch` are the published fields. That is wort
 material, not published text. This site therefore republishes only its aggregate shape
 (row count, status tally, severity spread, area counts) and never its item text. The
 `/ledger/` page states this in the reader's face rather than burying it.
+
+`.opencode/context.md` is gitignored as well (`.gitignore` line 9), and it is read for one
+thing: the definition of the P1/P2/P3 severity bands, which is quoted verbatim rather than
+paraphrased, because a paraphrase would be this report's claim about the project's
+severity model. The `/method/` file table marks both notes as untracked, and the
+`tracked` flag on each entry of `auditedRepo.files` is read from `git ls-files`.
 
 ## Local development
 

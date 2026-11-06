@@ -72,6 +72,10 @@ mark.
   Menlo, Consolas, monospace`). Reason: the census cells, file:line citations and verdict
   counts are compared column-wise, and tabular figures have to line up. Mono is used for
   data only, never for headings or body copy.
+- **Source text keeps its own case**: the lowercase treatment on table headings applies to
+  column labels only — `th[scope='row']` is exempt. Reason: a row header carries the source's
+  own text (`README.md`, `Gate::allows()`, a ledger status like `OPEN`), and a CSS transform
+  that lowercased it would print something the audited repository does not say.
 - **Scale**: fluid, `clamp()` per step, five steps. Mobile gets a smaller step rather than
   the desktop scale squeezed. No uppercase display labels.
 

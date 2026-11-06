@@ -8,11 +8,13 @@ deliberately not recorded here. `npm run deploy` prints it.
 
 ## What this is
 
-A static site built by Astro, generated from the audited repository by script. No number
-on any page is typed by hand: `scripts/extract-lw.mjs` reads `README.md`, `MAP.md`,
-`COMPILED.md`, `tools/constructs.json`, `package.json` and the working-tree ledger from
-the audited repo, cross-checks them against each other, and writes `src/data/report.json`.
-A check that stops agreeing with its source stops the build.
+A static site built by Astro, generated from the audited repository by script. No figure
+on any page is typed by hand without a build check behind it: `scripts/extract-lw.mjs`
+reads `README.md`, `MAP.md`, `COMPILED.md`, `tools/constructs.json`, `package.json` and
+two working-tree notes (`notes/PLAYBOOK.local.md` for the audit ledger,
+`.opencode/context.md` for the severity definitions) from the audited repo, cross-checks
+them against each other, and writes `src/data/report.json`. A check that stops agreeing
+with its source stops the build.
 
 If a figure cannot be verified, the page says so rather than smoothing it over. The
 `/method/` page lists what was measured, on what machine, and what could not be checked.
@@ -41,7 +43,7 @@ npm run extract    # re-read the audited repo, rewrite src/data/report.json
 npm run verify     # extract into a temp file and diff against the committed data
 npm run dev        # local dev server
 npm run build      # static build into dist/
-npm run deploy     # wrangler deploy (Workers static assets)
+npm run deploy     # extract, verify, build, then wrangler deploy (Workers static assets)
 ```
 
 `LW_REPO` overrides the audited repo path (default `../laravel-workers`).

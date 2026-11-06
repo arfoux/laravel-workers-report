@@ -21,15 +21,15 @@ const platformRows = features.filter((row) => row.klass !== 'fits').slice(0, 12)
 ---
 
 <Base
-  title="laravel-workers report: 47 of 118 audited constructs compile"
+  title={`laravel-workers report: ${number(headline.constructs.compiles)} of ${number(total)} audited constructs compile`}
   description="Every route of a Laravel app gets a compiled handler, a snapshot or a port; everything the compiler cannot carry fails the build. The numbers, the gaps and the ledger, extracted from the repository."
 >
   <section class="hero">
     <div class="shell hero__grid">
       <div>
         <p class="verdict">
-          <span class="verdict__value">RUNS WITH DECLARED GAPS</span>
-          <span class="muted">the gated verdict block in README.md</span>
+          <span class="verdict__value">{headline.verdict.badge}</span>
+          <span class="muted">the verdict badge in README.md; CI heads its pull-request comment{' '}<code>{headline.verdict.heading}</code></span>
         </p>
         <h1>{number(headline.constructs.compiles)} of {number(total)} audited constructs compile</h1>
         <p class="lede">
@@ -46,8 +46,10 @@ const platformRows = features.filter((row) => row.klass !== 'fits').slice(0, 12)
 
       <figure class="hero__figure">
         <div class="grid__head">
-          <span class="grid__title">the census, 118 cells</span>
-          <span class="count">47 compile · 64 fail loud · 7 documented</span>
+          <span class="grid__title">the census, {number(total)} cells</span>
+          <span class="count">
+            {number(headline.constructs.compiles)} compile · {number(headline.constructs.failsLoud)} fail loud · {number(headline.constructs.documented)} documented
+          </span>
         </div>
         <ul class="cells cell-grid" aria-hidden="true">
           {constructs.map((row) => (
@@ -173,7 +175,7 @@ const platformRows = features.filter((row) => row.klass !== 'fits').slice(0, 12)
       {[
         { href: '/coverage/', title: 'coverage', blurb: `The ${number(headline.docs.pages)} Laravel documentation pages, each with the verdict the project gives it, and the CPU measurements that set the budget.` },
         { href: '/gaps/', title: 'gaps', blurb: `The ${number(headline.constructs.failsLoud)} constructs that refuse to compile, why they refuse, and the escape hatch published for each one.` },
-        { href: '/ledger/', title: 'ledger', blurb: 'The shape of the project\'s own audit ledger: how many findings, at what severity, and how many are closed.' },
+        { href: '/ledger/', title: 'ledger', blurb: 'The shape of the project\'s own audit ledger: how many suggestions it holds, at what severity, and how many are closed.' },
         { href: '/method/', title: 'method', blurb: 'How every number here is produced, what was measured on this machine, and what could not be verified.' },
         { href: '/report/', title: 'report', blurb: 'The same extracted data on one page, with nothing behind an interaction, for reading straight through.' },
       ].map((entry) => (
